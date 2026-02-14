@@ -1,0 +1,7 @@
+[gd_scene load_steps=3 format=3 uid="uid://soldier_model"]
+
+[ext_resource type="PackedScene" uid="uid://c8ka6l8biueue" path="res://animations/Run Forward.fbx" id="1_fbx"]
+[ext_resource type="Texture2D" uid="uid://bc68k6ppqyb6c" path="res://animations/Run Forward_0.png" id="2_texture"]
+
+[node name="SoldierModel" instance=ExtResource("1_fbx")]
+transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0)

@@ -1,0 +1,56 @@
+[gd_scene load_steps=11 format=3 uid="uid://player001"]
+
+[ext_resource type="Script" path="res://player/player.gd" id="1_player"]
+[ext_resource type="Resource" uid="uid://pistol_res" path="res://weapons/pistol.tres" id="2_pistol"]
+[ext_resource type="Resource" uid="uid://rifle_res" path="res://weapons/rifle.tres" id="3_rifle"]
+[ext_resource type="Resource" path="res://weapons/m4a1.tres" id="4_m4a1"]
+[ext_resource type="Resource" path="res://weapons/ak47.tres" id="5_ak47"]
+[ext_resource type="Resource" path="res://weapons/shotgun.tres" id="6_shotgun"]
+[ext_resource type="Resource" path="res://weapons/sniper_rifle.tres" id="7_sniper"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flash"]
+shading_mode = 0
+albedo_color = Color(1, 0.9, 0.3, 1)
+emission_enabled = true
+emission = Color(1, 0.8, 0.2, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_flash"]
+size = Vector2(0.15, 0.15)
+material = SubResource("StandardMaterial3D_flash")
+
+[node name="Player" type="CharacterBody3D" groups=["player"]]
+script = ExtResource("1_player")
+weapons = Array[Resource("res://weapons/weapon.gd")]([ExtResource("2_pistol"), ExtResource("4_m4a1"), ExtResource("5_ak47"), ExtResource("6_shotgun"), ExtResource("7_sniper")])
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+
+[node name="Camera" type="Camera3D" parent="Head"]
+
+[node name="RayCast3D" type="RayCast3D" parent="Head/Camera"]
+target_position = Vector3(0, 0, -50)
+
+[node name="WeaponContainer" type="Node3D" parent="Head/Camera"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, -0.15, -0.4)
+
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Head/Camera/WeaponContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.3)
+visible = false
+mesh = SubResource("QuadMesh_flash")
+
+[node name="ShootCooldown" type="Timer" parent="."]
+one_shot = true
+
+[node name="ReloadTimer" type="Timer" parent="."]
+one_shot = true
+
+[connection signal="timeout" from="ReloadTimer" to="." method="_on_reload_timer_timeout"]

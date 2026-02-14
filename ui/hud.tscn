@@ -1,0 +1,287 @@
+[gd_scene load_steps=4 format=3 uid="uid://hud001"]
+
+[sub_resource type="GDScript" id="GDScript_1"]
+script/source = "extends CanvasLayer
+
+@onready var ammo_label = $AmmoContainer/AmmoLabel
+@onready var weapon_label = $WeaponLabel
+@onready var crosshair = $Crosshair
+@onready var health_bar = $BarsContainer/HealthBar
+@onready var stamina_bar = $BarsContainer/StaminaBar
+@onready var grenade_label = $GrenadeContainer/GrenadeLabel
+@onready var kill_feed = $KillFeed
+@onready var notification_label = $NotificationLabel
+
+var kill_feed_entries: Array = []
+var notification_timer := 0.0
+
+func _ready():
+	# Find player and connect signals
+	await get_tree().process_frame
+	var player = get_tree().get_first_node_in_group(\"player\")
+	if player:
+		player.ammo_updated.connect(_on_ammo_updated)
+		player.weapon_changed.connect(_on_weapon_changed)
+		player.health_updated.connect(_on_health_updated)
+		player.stamina_updated.connect(_on_stamina_updated)
+		if player.has_signal(\"grenades_updated\"):
+			player.grenades_updated.connect(_on_grenades_updated)
+		if player.has_signal(\"kill_registered\"):
+			player.kill_registered.connect(_on_kill_registered)
+		if player.has_signal(\"notification_show\"):
+			player.notification_show.connect(_on_notification_show)
+	
+	# Connect to enemy deaths
+	for enemy in get_tree().get_nodes_in_group(\"enemy\"):
+		if enemy.has_signal(\"enemy_died\"):
+			enemy.enemy_died.connect(_on_enemy_died.bind(enemy))
+	
+	notification_label.modulate.a = 0
+
+func _process(delta):
+	# Fade notification
+	if notification_timer > 0:
+		notification_timer -= delta
+		if notification_timer <= 0:
+			var tween = create_tween()
+			tween.tween_property(notification_label, \"modulate:a\", 0.0, 0.3)
+
+func _on_ammo_updated(current: int, reserve: int):
+	ammo_label.text = str(current) + \" / \" + str(reserve)
+
+func _on_weapon_changed(weapon_name: String):
+	weapon_label.text = weapon_name
+
+func _on_health_updated(current: float, max_val: float):
+	health_bar.value = (current / max_val) * 100
+
+func _on_stamina_updated(current: float, max_val: float):
+	stamina_bar.value = (current / max_val) * 100
+
+func _on_grenades_updated(current: int, max_val: int):
+	grenade_label.text = str(current) + \" / \" + str(max_val)
+
+func _on_kill_registered(killer_name: String, victim_name: String, weapon_name: String):
+	add_kill_feed_entry(killer_name, victim_name, weapon_name)
+
+func _on_notification_show(message: String):
+	notification_label.text = message
+	notification_label.modulate.a = 1.0
+	notification_timer = 2.0
+
+func _on_enemy_died(enemy: Node):
+	add_kill_feed_entry(\"Player\", \"Enemy\", \"Weapon\")
+
+func add_kill_feed_entry(killer: String, victim: String, weapon: String):
+	var entry = Label.new()
+	entry.text = killer + \" ☠ \" + victim
+	entry.add_theme_font_size_override(\"font_size\", 16)
+	entry.add_theme_color_override(\"font_color\", Color(1, 0.3, 0.3))
+	entry.add_theme_color_override(\"font_outline_color\", Color(0, 0, 0))
+	entry.add_theme_constant_override(\"outline_size\", 2)
+	
+	kill_feed.add_child(entry)
+	kill_feed.move_child(entry, 0)
+	kill_feed_entries.append(entry)
+	
+	# Limit entries
+	if kill_feed_entries.size() > 5:
+		var old_entry = kill_feed_entries.pop_front()
+		old_entry.queue_free()
+	
+	# Fade out after delay
+	var tween = create_tween()
+	tween.tween_interval(3.0)
+	tween.tween_property(entry, \"modulate:a\", 0.0, 1.0)
+	tween.tween_callback(func(): 
+		kill_feed_entries.erase(entry)
+		entry.queue_free()
+	)
+"
+
+[sub_resource type="LabelSettings" id="LabelSettings_1"]
+font_size = 24
+outline_size = 3
+outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_notify"]
+font_size = 28
+font_color = Color(1, 0.9, 0.2, 1)
+outline_size = 4
+outline_color = Color(0, 0, 0, 1)
+
+[node name="HUD" type="CanvasLayer"]
+script = SubResource("GDScript_1")
+
+[node name="Crosshair" type="Control" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Top" type="ColorRect" parent="Crosshair"]
+offset_left = -2.0
+offset_top = -12.0
+offset_right = 2.0
+offset_bottom = -4.0
+color = Color(1, 1, 1, 0.9)
+
+[node name="Bottom" type="ColorRect" parent="Crosshair"]
+offset_left = -2.0
+offset_top = 4.0
+offset_right = 2.0
+offset_bottom = 12.0
+color = Color(1, 1, 1, 0.9)
+
+[node name="Left" type="ColorRect" parent="Crosshair"]
+offset_left = -12.0
+offset_top = -2.0
+offset_right = -4.0
+offset_bottom = 2.0
+color = Color(1, 1, 1, 0.9)
+
+[node name="Right" type="ColorRect" parent="Crosshair"]
+offset_left = 4.0
+offset_top = -2.0
+offset_right = 12.0
+offset_bottom = 2.0
+color = Color(1, 1, 1, 0.9)
+
+[node name="Dot" type="ColorRect" parent="Crosshair"]
+offset_left = -1.0
+offset_top = -1.0
+offset_right = 1.0
+offset_bottom = 1.0
+color = Color(1, 0.2, 0.2, 1)
+
+[node name="BarsContainer" type="VBoxContainer" parent="."]
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 220.0
+offset_bottom = 80.0
+
+[node name="HealthBar" type="ProgressBar" parent="BarsContainer"]
+custom_minimum_size = Vector2(200, 20)
+layout_mode = 2
+theme_override_styles/fill = null
+value = 100.0
+show_percentage = false
+
+[node name="HealthLabel" type="Label" parent="BarsContainer/HealthBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "HEALTH"
+label_settings = SubResource("LabelSettings_1")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StaminaBar" type="ProgressBar" parent="BarsContainer"]
+custom_minimum_size = Vector2(200, 16)
+layout_mode = 2
+value = 100.0
+show_percentage = false
+
+[node name="StaminaLabel" type="Label" parent="BarsContainer/StaminaBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "STAMINA"
+label_settings = SubResource("LabelSettings_1")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AmmoContainer" type="HBoxContainer" parent="."]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -60.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="AmmoLabel" type="Label" parent="AmmoContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "12 / 60"
+label_settings = SubResource("LabelSettings_1")
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="WeaponLabel" type="Label" parent="."]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -50.0
+offset_right = 200.0
+offset_bottom = -20.0
+grow_vertical = 0
+text = "Pistol"
+label_settings = SubResource("LabelSettings_1")
+vertical_alignment = 1
+
+[node name="GrenadeContainer" type="HBoxContainer" parent="."]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -100.0
+offset_right = -20.0
+offset_bottom = -65.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="GrenadeIcon" type="Label" parent="GrenadeContainer"]
+layout_mode = 2
+text = "💣"
+label_settings = SubResource("LabelSettings_1")
+
+[node name="GrenadeLabel" type="Label" parent="GrenadeContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "3 / 3"
+label_settings = SubResource("LabelSettings_1")
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="KillFeed" type="VBoxContainer" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -250.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 150.0
+grow_horizontal = 0
+alignment = 1
+
+[node name="NotificationLabel" type="Label" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 100.0
+offset_right = 150.0
+offset_bottom = 140.0
+grow_horizontal = 2
+text = "+1 Grenade"
+label_settings = SubResource("LabelSettings_notify")
+horizontal_alignment = 1
+vertical_alignment = 1

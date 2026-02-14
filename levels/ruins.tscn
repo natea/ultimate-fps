@@ -1,0 +1,323 @@
+[gd_scene load_steps=16 format=3 uid="uid://ruins001"]
+
+[ext_resource type="PackedScene" uid="uid://player001" path="res://player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://hud001" path="res://ui/hud.tscn" id="2_hud"]
+[ext_resource type="PackedScene" uid="uid://scope_overlay" path="res://ui/scope_overlay.tscn" id="3_scope"]
+[ext_resource type="PackedScene" uid="uid://enemy001" path="res://enemies/enemy.tscn" id="4_enemy"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
+sky_top_color = Color(0.35, 0.6, 0.85, 1)
+sky_horizon_color = Color(0.7, 0.8, 0.9, 1)
+ground_bottom_color = Color(0.2, 0.25, 0.2, 1)
+ground_horizon_color = Color(0.5, 0.6, 0.5, 1)
+sun_angle_max = 45.0
+
+[sub_resource type="Sky" id="Sky_1"]
+sky_material = SubResource("ProceduralSkyMaterial_1")
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 2
+sky = SubResource("Sky_1")
+ambient_light_source = 2
+ambient_light_color = Color(0.75, 0.8, 0.7, 1)
+ambient_light_energy = 0.6
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 0.3
+fog_enabled = true
+fog_light_color = Color(0.7, 0.75, 0.65, 1)
+fog_density = 0.002
+
+[sub_resource type="StandardMaterial3D" id="Mat_Grass"]
+albedo_color = Color(0.25, 0.55, 0.2, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="Mat_Stone"]
+albedo_color = Color(0.5, 0.48, 0.45, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="Mat_Temple"]
+albedo_color = Color(0.7, 0.65, 0.55, 1)
+roughness = 0.7
+
+[sub_resource type="BoxShape3D" id="BoxShape_Ground"]
+size = Vector3(200, 1, 200)
+
+[sub_resource type="BoxMesh" id="BoxMesh_Ground"]
+size = Vector3(200, 1, 200)
+material = SubResource("Mat_Grass")
+
+[sub_resource type="BoxShape3D" id="BoxShape_Platform"]
+size = Vector3(4, 0.5, 4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_Platform"]
+size = Vector3(4, 0.5, 4)
+material = SubResource("Mat_Stone")
+
+[sub_resource type="BoxMesh" id="BoxMesh_Temple"]
+size = Vector3(4, 0.5, 4)
+material = SubResource("Mat_Temple")
+
+[node name="Ruins" type="Node3D"]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.75, -0.5, 0.433, 0, 0.656, 0.755, -0.661, -0.566, 0.492, 0, 20, 0)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 1.1
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape_Ground")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("BoxMesh_Ground")
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 30)
+
+[node name="HUD" parent="." instance=ExtResource("2_hud")]
+
+[node name="ScopeOverlay" parent="." instance=ExtResource("3_scope")]
+
+[node name="Temple" type="Node3D" parent="."]
+
+[node name="TempleFloor" type="StaticBody3D" parent="Temple"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="Collision" type="CollisionShape3D" parent="Temple/TempleFloor"]
+transform = Transform3D(5, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Temple/TempleFloor"]
+transform = Transform3D(5, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0)
+mesh = SubResource("BoxMesh_Temple")
+
+[node name="Pillar1" type="StaticBody3D" parent="Temple"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 4, -8)
+
+[node name="Collision" type="CollisionShape3D" parent="Temple/Pillar1"]
+transform = Transform3D(0.5, 0, 0, 0, 6, 0, 0, 0, 0.5, 0, 0, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Temple/Pillar1"]
+transform = Transform3D(0.5, 0, 0, 0, 6, 0, 0, 0, 0.5, 0, 0, 0)
+mesh = SubResource("BoxMesh_Temple")
+
+[node name="Pillar2" type="StaticBody3D" parent="Temple"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4, -8)
+
+[node name="Collision" type="CollisionShape3D" parent="Temple/Pillar2"]
+transform = Transform3D(0.5, 0, 0, 0, 6, 0, 0, 0, 0.5, 0, 0, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Temple/Pillar2"]
+transform = Transform3D(0.5, 0, 0, 0, 6, 0, 0, 0, 0.5, 0, 0, 0)
+mesh = SubResource("BoxMesh_Temple")
+
+[node name="Pillar3" type="StaticBody3D" parent="Temple"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 4, 8)
+
+[node name="Collision" type="CollisionShape3D" parent="Temple/Pillar3"]
+transform = Transform3D(0.5, 0, 0, 0, 6, 0, 0, 0, 0.5, 0, 0, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Temple/Pillar3"]
+transform = Transform3D(0.5, 0, 0, 0, 6, 0, 0, 0, 0.5, 0, 0, 0)
+mesh = SubResource("BoxMesh_Temple")
+
+[node name="Pillar4" type="StaticBody3D" parent="Temple"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4, 8)
+
+[node name="Collision" type="CollisionShape3D" parent="Temple/Pillar4"]
+transform = Transform3D(0.5, 0, 0, 0, 6, 0, 0, 0, 0.5, 0, 0, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Temple/Pillar4"]
+transform = Transform3D(0.5, 0, 0, 0, 6, 0, 0, 0, 0.5, 0, 0, 0)
+mesh = SubResource("BoxMesh_Temple")
+
+[node name="TempleRoof" type="StaticBody3D" parent="Temple"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
+
+[node name="Collision" type="CollisionShape3D" parent="Temple/TempleRoof"]
+transform = Transform3D(5.5, 0, 0, 0, 0.5, 0, 0, 0, 5.5, 0, 0, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Temple/TempleRoof"]
+transform = Transform3D(5.5, 0, 0, 0, 0.5, 0, 0, 0, 5.5, 0, 0, 0)
+mesh = SubResource("BoxMesh_Temple")
+
+[node name="Ruins" type="Node3D" parent="."]
+
+[node name="Wall1" type="StaticBody3D" parent="Ruins"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 2, 20)
+
+[node name="Collision" type="CollisionShape3D" parent="Ruins/Wall1"]
+transform = Transform3D(3, 0, 0, 0, 2, 0, 0, 0, 0.3, 0, 0, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Ruins/Wall1"]
+transform = Transform3D(3, 0, 0, 0, 2, 0, 0, 0, 0.3, 0, 0, 0)
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="Wall2" type="StaticBody3D" parent="Ruins"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 1.5, -25)
+
+[node name="Collision" type="CollisionShape3D" parent="Ruins/Wall2"]
+transform = Transform3D(2, 0, 0, 0, 1.5, 0, 0, 0, 0.3, 0, 0, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Ruins/Wall2"]
+transform = Transform3D(2, 0, 0, 0, 1.5, 0, 0, 0, 0.3, 0, 0, 0)
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="Platform1" type="StaticBody3D" parent="Ruins"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 3, -15)
+
+[node name="Collision" type="CollisionShape3D" parent="Ruins/Platform1"]
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Ruins/Platform1"]
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="Platform2" type="StaticBody3D" parent="Ruins"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 2.5, 30)
+
+[node name="Collision" type="CollisionShape3D" parent="Ruins/Platform2"]
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Ruins/Platform2"]
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="Tower1" type="StaticBody3D" parent="Ruins"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 5, -30)
+
+[node name="Collision" type="CollisionShape3D" parent="Ruins/Tower1"]
+transform = Transform3D(1, 0, 0, 0, 5, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Ruins/Tower1"]
+transform = Transform3D(1, 0, 0, 0, 5, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="Tower2" type="StaticBody3D" parent="Ruins"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 4, 35)
+
+[node name="Collision" type="CollisionShape3D" parent="Ruins/Tower2"]
+transform = Transform3D(1, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Ruins/Tower2"]
+transform = Transform3D(1, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="Arch1" type="StaticBody3D" parent="Ruins"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 0, -40)
+
+[node name="LeftPillar" type="CollisionShape3D" parent="Ruins/Arch1"]
+transform = Transform3D(0.5, 0, 0, 0, 4, 0, 0, 0, 0.5, -3, 2, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="LeftMesh" type="MeshInstance3D" parent="Ruins/Arch1"]
+transform = Transform3D(0.5, 0, 0, 0, 4, 0, 0, 0, 0.5, -3, 2, 0)
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="RightPillar" type="CollisionShape3D" parent="Ruins/Arch1"]
+transform = Transform3D(0.5, 0, 0, 0, 4, 0, 0, 0, 0.5, 3, 2, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="RightMesh" type="MeshInstance3D" parent="Ruins/Arch1"]
+transform = Transform3D(0.5, 0, 0, 0, 4, 0, 0, 0, 0.5, 3, 2, 0)
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="TopBeam" type="CollisionShape3D" parent="Ruins/Arch1"]
+transform = Transform3D(2, 0, 0, 0, 0.4, 0, 0, 0, 0.6, 0, 4.5, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="TopMesh" type="MeshInstance3D" parent="Ruins/Arch1"]
+transform = Transform3D(2, 0, 0, 0, 0.4, 0, 0, 0, 0.6, 0, 4.5, 0)
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="Arch2" type="StaticBody3D" parent="Ruins"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0, 40)
+
+[node name="LeftPillar" type="CollisionShape3D" parent="Ruins/Arch2"]
+transform = Transform3D(0.5, 0, 0, 0, 3, 0, 0, 0, 0.5, -2.5, 1.5, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="LeftMesh" type="MeshInstance3D" parent="Ruins/Arch2"]
+transform = Transform3D(0.5, 0, 0, 0, 3, 0, 0, 0, 0.5, -2.5, 1.5, 0)
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="RightPillar" type="CollisionShape3D" parent="Ruins/Arch2"]
+transform = Transform3D(0.5, 0, 0, 0, 3, 0, 0, 0, 0.5, 2.5, 1.5, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="RightMesh" type="MeshInstance3D" parent="Ruins/Arch2"]
+transform = Transform3D(0.5, 0, 0, 0, 3, 0, 0, 0, 0.5, 2.5, 1.5, 0)
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="TopBeam" type="CollisionShape3D" parent="Ruins/Arch2"]
+transform = Transform3D(1.8, 0, 0, 0, 0.3, 0, 0, 0, 0.5, 0, 3.5, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="TopMesh" type="MeshInstance3D" parent="Ruins/Arch2"]
+transform = Transform3D(1.8, 0, 0, 0, 0.3, 0, 0, 0, 0.5, 0, 3.5, 0)
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="ScatteredPillars" type="Node3D" parent="Ruins"]
+
+[node name="Pillar1" type="StaticBody3D" parent="Ruins/ScatteredPillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 1.5, 25)
+
+[node name="Collision" type="CollisionShape3D" parent="Ruins/ScatteredPillars/Pillar1"]
+transform = Transform3D(0.4, 0, 0, 0, 3, 0, 0, 0, 0.4, 0, 0, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Ruins/ScatteredPillars/Pillar1"]
+transform = Transform3D(0.4, 0, 0, 0, 3, 0, 0, 0, 0.4, 0, 0, 0)
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="Pillar2" type="StaticBody3D" parent="Ruins/ScatteredPillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 1, -15)
+
+[node name="Collision" type="CollisionShape3D" parent="Ruins/ScatteredPillars/Pillar2"]
+transform = Transform3D(0.4, 0, 0, 0, 2, 0, 0, 0, 0.4, 0, 0, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Ruins/ScatteredPillars/Pillar2"]
+transform = Transform3D(0.4, 0, 0, 0, 2, 0, 0, 0, 0.4, 0, 0, 0)
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="Pillar3" type="StaticBody3D" parent="Ruins/ScatteredPillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 2, 10)
+
+[node name="Collision" type="CollisionShape3D" parent="Ruins/ScatteredPillars/Pillar3"]
+transform = Transform3D(0.5, 0, 0, 0, 4, 0, 0, 0, 0.5, 0, 0, 0)
+shape = SubResource("BoxShape_Platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="Ruins/ScatteredPillars/Pillar3"]
+transform = Transform3D(0.5, 0, 0, 0, 4, 0, 0, 0, 0.5, 0, 0, 0)
+mesh = SubResource("BoxMesh_Platform")
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="Enemy1" parent="Enemies" instance=ExtResource("4_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1, 15)
+
+[node name="Enemy2" parent="Enemies" instance=ExtResource("4_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 1, 20)
+
+[node name="Enemy3" parent="Enemies" instance=ExtResource("4_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 1, -20)
+
+[node name="Enemy4" parent="Enemies" instance=ExtResource("4_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 1, -30)
+
+[node name="Enemy5" parent="Enemies" instance=ExtResource("4_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, -5)

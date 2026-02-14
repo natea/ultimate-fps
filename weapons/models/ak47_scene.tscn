@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://ak47_scene"]
+
+[ext_resource type="ArrayMesh" path="res://weapons/models/ak47.obj" id="1_mesh"]
+[ext_resource type="Texture2D" path="res://weapons/models/ak47_texture.jpg" id="2_texture"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+albedo_texture = ExtResource("2_texture")
+
+[node name="AK47" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = ExtResource("1_mesh")
+surface_material_override/0 = SubResource("StandardMaterial3D_1")

@@ -1,0 +1,49 @@
+[gd_scene load_steps=8 format=3 uid="uid://enemy001"]
+
+[ext_resource type="Script" uid="uid://djosm1w1y1083" path="res://enemies/enemy.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://c8ka6l8biueue" path="res://animations/Run Forward.fbx" id="2_soldier"]
+[ext_resource type="Texture2D" uid="uid://bc68k6ppqyb6c" path="res://animations/Run Forward_0.png" id="3_texture"]
+[ext_resource type="ArrayMesh" uid="uid://c8vtduva65das" path="res://weapons/models/ak47.obj" id="4_gun"]
+[ext_resource type="Texture2D" uid="uid://dbtqg4fiug3np" path="res://weapons/models/ak47_texture.jpg" id="5_gun_texture"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.35
+height = 1.7
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+albedo_texture = ExtResource("3_texture")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gun"]
+albedo_texture = ExtResource("5_gun_texture")
+
+[node name="Enemy" type="CharacterBody3D" groups=["enemy"]]
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="SoldierModel" parent="." instance=ExtResource("2_soldier")]
+transform = Transform3D(-100, 0, 0, 0, 100, 0, 0, 0, -100, 0, 0, 0)
+
+[node name="Skeleton3D" parent="SoldierModel" index="0"]
+bones/0/position = Vector3(0, 0, 0)
+
+[node name="Soldier_body" parent="SoldierModel/Skeleton3D" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_1")
+
+[node name="Soldier_head" parent="SoldierModel/Skeleton3D" index="1"]
+surface_material_override/0 = SubResource("StandardMaterial3D_1")
+
+[node name="RightHandAttachment" type="BoneAttachment3D" parent="SoldierModel/Skeleton3D"]
+bone_name = "mixamorig_RightHand"
+bone_idx = 38
+
+[node name="GunModel" type="MeshInstance3D" parent="SoldierModel/Skeleton3D/RightHandAttachment"]
+transform = Transform3D(0.000015, 0, 0, 0, 0, 0.000015, 0, -0.000015, 0, 0, 0, 0)
+mesh = ExtResource("4_gun")
+surface_material_override/0 = SubResource("StandardMaterial3D_gun")
+
+[node name="RayCast3D" type="RayCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+target_position = Vector3(0, 0, -50)
