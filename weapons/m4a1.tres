@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://bjc4eeyesp8tq"]
+
+[ext_resource type="Script" uid="uid://3woik3xs3f8f" path="res://weapons/weapon.gd" id="1_weapon"]
+[ext_resource type="PackedScene" path="res://weapons/models/m4a1_scene.tscn" id="2_model"]
+
+[resource]
+script = ExtResource("1_weapon")
+model = ExtResource("2_model")
+position = Vector3(0.25, -0.18, -0.5)
+scale = 3.5
+muzzle_position = Vector3(0, 0.03, 0.25)
+weapon_name = "M4A1-S"
+cooldown = 0.09
+max_distance = 80
+damage = 22.0
+spread = 0.8
+automatic = true
+magazine_size = 25
+max_ammo = 100
+reload_time = 2.2
+recoil_vertical = Vector2(0.01, 0.018)
+recoil_horizontal = Vector2(-0.008, 0.008)
+knockback = 0.25
+ads_position = Vector3(0, -0.15, -0.4)
