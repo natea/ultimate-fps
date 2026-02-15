@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://d0hchmxbo1w3m"]
+
+[ext_resource type="Script" uid="uid://c2taevsa6b7f3" path="res://enemies/zombie.gd" id="1_uur8n"]
+[ext_resource type="PackedScene" uid="uid://dum32d3372xwr" path="res://animations/zombie/Zombie Idle (1).fbx" id="2_ujw3w"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_uur8n"]
+radius = 0.35
+height = 1.7
+
+[node name="Zombie" type="CharacterBody3D"]
+script = ExtResource("1_uur8n")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+shape = SubResource("CapsuleShape3D_uur8n")
+
+[node name="ZombieModel" type="Node3D" parent="." instance=ExtResource("2_ujw3w")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
