@@ -18,6 +18,7 @@ var events := [
 
 func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	get_window().grab_focus()
 	_setup_gun_image()
 	_setup_map_select()
 	_setup_event_map_select()
@@ -27,7 +28,6 @@ func _ready():
 	$MenuContainer/QuitButton.mouse_entered.connect(_on_button_hover.bind($MenuContainer/QuitButton))
 
 func _process(_delta):
-	# Keep mouse visible on the menu at all times
 	if Input.mouse_mode != Input.MOUSE_MODE_VISIBLE:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
