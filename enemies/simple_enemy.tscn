@@ -1,0 +1,81 @@
+[gd_scene load_steps=12 format=3 uid="uid://cpksvbda14bd2"]
+
+[ext_resource type="Script" uid="uid://bx6udhelgr13q" path="res://enemies/simple_enemy.gd" id="1_script"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_upmka"]
+size = Vector3(0.5, 0.6, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2chrn"]
+albedo_color = Color(0.25, 0.3, 0.2, 1)
+roughness = 0.8
+
+[sub_resource type="SphereMesh" id="SphereMesh_6jotu"]
+radius = 0.15
+height = 0.3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5ip7x"]
+albedo_color = Color(0.7, 0.55, 0.45, 1)
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="BoxMesh_qq0tk"]
+size = Vector3(0.15, 0.5, 0.15)
+
+[sub_resource type="BoxMesh" id="BoxMesh_q6xmk"]
+size = Vector3(0.15, 0.5, 0.15)
+
+[sub_resource type="BoxMesh" id="BoxMesh_u8jjx"]
+size = Vector3(0.18, 0.6, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xid3f"]
+albedo_color = Color(0.15, 0.18, 0.12, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_3tjea"]
+size = Vector3(0.18, 0.6, 0.2)
+
+[node name="SimpleEnemy" type="CharacterBody3D" groups=["enemy"]]
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="RayCast3D" type="RayCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+target_position = Vector3(0, 0, -50)
+
+[node name="SoldierBody" type="Node3D" parent="."]
+
+[node name="Torso" type="MeshInstance3D" parent="SoldierBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+mesh = SubResource("BoxMesh_upmka")
+surface_material_override/0 = SubResource("StandardMaterial3D_2chrn")
+
+[node name="Head" type="MeshInstance3D" parent="SoldierBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+mesh = SubResource("SphereMesh_6jotu")
+surface_material_override/0 = SubResource("StandardMaterial3D_5ip7x")
+
+[node name="LeftArm" type="MeshInstance3D" parent="SoldierBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.33, 1.05, 0)
+mesh = SubResource("BoxMesh_qq0tk")
+surface_material_override/0 = SubResource("StandardMaterial3D_2chrn")
+
+[node name="RightArm" type="MeshInstance3D" parent="SoldierBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.33, 1.05, 0)
+mesh = SubResource("BoxMesh_q6xmk")
+surface_material_override/0 = SubResource("StandardMaterial3D_2chrn")
+
+[node name="LeftLeg" type="MeshInstance3D" parent="SoldierBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 0.4, 0)
+mesh = SubResource("BoxMesh_u8jjx")
+surface_material_override/0 = SubResource("StandardMaterial3D_xid3f")
+
+[node name="RightLeg" type="MeshInstance3D" parent="SoldierBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13, 0.4, 0)
+mesh = SubResource("BoxMesh_3tjea")
+surface_material_override/0 = SubResource("StandardMaterial3D_xid3f")

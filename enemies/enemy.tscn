@@ -40,7 +40,7 @@ bone_name = "mixamorig_RightHand"
 bone_idx = 38
 
 [node name="GunModel" type="MeshInstance3D" parent="SoldierModel/Skeleton3D/RightHandAttachment"]
-transform = Transform3D(0.000015, 0, 0, 0, 0, 0.000015, 0, -0.000015, 0, 0, 0, 0)
+transform = Transform3D(0.000015, 0, 0, 0, 0, -0.000015, 0, 0.000015, 0, 0, 0, 0)
 mesh = ExtResource("4_gun")
 surface_material_override/0 = SubResource("StandardMaterial3D_gun")
 
