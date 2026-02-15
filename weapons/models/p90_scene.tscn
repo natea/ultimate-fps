@@ -1,0 +1,40 @@
+[gd_scene load_steps=2 format=3 uid="uid://p90_scene"]
+
+[ext_resource type="PackedScene" path="res://weapons/models/p90/P90.fbx" id="1_model"]
+
+[sub_resource type="GDScript" id="GDScript_1"]
+script/source = "extends Node3D
+
+func _ready():
+	var base_path = \"res://weapons/models/p90/\"
+
+	var mat = StandardMaterial3D.new()
+	var albedo = load(base_path + \"Low2_low2_BaseColor.png\")
+	if albedo:
+		mat.albedo_texture = albedo
+	var metallic = load(base_path + \"Low2_low2_Metallic.png\")
+	if metallic:
+		mat.metallic = 1.0
+		mat.metallic_texture = metallic
+	var roughness = load(base_path + \"Low2_low2_Roughness.png\")
+	if roughness:
+		mat.roughness_texture = roughness
+	var normal = load(base_path + \"Low2_low2_Normal.png\")
+	if normal:
+		mat.normal_enabled = true
+		mat.normal_texture = normal
+
+	for child in get_children():
+		apply_material_recursive(child, mat)
+
+func apply_material_recursive(node, mat):
+	if node is MeshInstance3D:
+		node.material_override = mat
+	for child in node.get_children():
+		apply_material_recursive(child, mat)
+"
+
+[node name="P90" type="Node3D"]
+script = SubResource("GDScript_1")
+
+[node name="Model" parent="." instance=ExtResource("1_model")]

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://unj51qfpb3ra"]
+
+[ext_resource type="Script" uid="uid://3woik3xs3f8f" path="res://weapons/weapon.gd" id="1_weapon"]
+[ext_resource type="PackedScene" uid="uid://ciypqb5hfm7dy" path="res://weapons/models/scar_scene.tscn" id="2_model"]
+
+[resource]
+script = ExtResource("1_weapon")
+model = ExtResource("2_model")
+position = Vector3(0.25, -0.2, -0.5)
+scale = 0.015
+muzzle_position = Vector3(0, 0.03, 0.3)
+weapon_name = "SCAR-H"
+cooldown = 0.11
+max_distance = 85
+damage = 30.0
+spread = 1.0
+automatic = true
+magazine_size = 20
+max_ammo = 80
+reload_time = 2.3
+recoil_vertical = Vector2(0.018, 0.028)
+recoil_horizontal = Vector2(-0.012, 0.012)
+knockback = 0.4
+ads_fov = 15.0
+ads_position = Vector3(0, -0.15, -0.4)
+has_scope = true

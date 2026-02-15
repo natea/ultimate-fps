@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://yrqctn3rkeep"]
+
+[ext_resource type="Script" uid="uid://3woik3xs3f8f" path="res://weapons/weapon.gd" id="1_weapon"]
+[ext_resource type="PackedScene" path="res://weapons/models/strela_scene.tscn" id="2_model"]
+
+[resource]
+script = ExtResource("1_weapon")
+model = ExtResource("2_model")
+position = Vector3(0.3, -0.25, -0.5)
+rotation = Vector3(0, 270, 0)
+scale = 0.012
+muzzle_position = Vector3(0, 0.05, 0.5)
+weapon_name = "Strela-P"
+cooldown = 1.2
+max_distance = 80
+damage = 100.0
+magazine_size = 1
+max_ammo = 8
+reload_time = 2.5
+recoil_vertical = Vector2(0.04, 0.06)
+knockback = 2.0
+ads_fov = 45.0
+ads_position = Vector3(0, -0.15, -0.4)

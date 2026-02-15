@@ -1,0 +1,42 @@
+[gd_scene load_steps=2 format=3 uid="uid://strela_scene"]
+
+[ext_resource type="PackedScene" path="res://weapons/models/strela/Strela-P.fbx" id="1_model"]
+
+[sub_resource type="GDScript" id="GDScript_1"]
+script/source = "extends Node3D
+
+func _ready():
+	var base_path = \"res://weapons/models/strela/\"
+
+	# Create materials for each texture set
+	var body_mat = _make_mat(base_path + \"wpn_p31_la_kgolf_body_v0.png\", base_path + \"wpn_p31_la_kgolf_body_v0_n.png\")
+	var body2_mat = _make_mat(base_path + \"wpn_p31_la_kgolf_body2_v0.png\", base_path + \"wpn_p31_la_kgolf_body2_v0_n.png\")
+
+	# Apply main body material to all meshes
+	for child in get_children():
+		_apply_material_recursive(child, body_mat)
+
+func _make_mat(albedo_path: String, normal_path: String) -> StandardMaterial3D:
+	var mat = StandardMaterial3D.new()
+	var albedo = load(albedo_path)
+	if albedo:
+		mat.albedo_texture = albedo
+	var normal = load(normal_path)
+	if normal:
+		mat.normal_enabled = true
+		mat.normal_texture = normal
+	mat.metallic = 0.4
+	mat.roughness = 0.6
+	return mat
+
+func _apply_material_recursive(node, mat):
+	if node is MeshInstance3D:
+		node.material_override = mat
+	for child in node.get_children():
+		_apply_material_recursive(child, mat)
+"
+
+[node name="StrelaP" type="Node3D"]
+script = SubResource("GDScript_1")
+
+[node name="Model" parent="." instance=ExtResource("1_model")]

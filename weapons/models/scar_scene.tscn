@@ -1,0 +1,42 @@
+[gd_scene load_steps=2 format=3 uid="uid://ciypqb5hfm7dy"]
+
+[ext_resource type="ArrayMesh" uid="uid://fh6b7ublsp3c" path="res://weapons/models/scar/Gun.obj" id="1_0d3bs"]
+
+[sub_resource type="GDScript" id="GDScript_1"]
+script/source = "extends Node3D
+
+func _ready():
+	var base_path = \"res://weapons/models/scar/\"
+
+	# Gun body material
+	var gun_mat = StandardMaterial3D.new()
+	var albedo = load(base_path + \"GAP_Examen_Gun_albedo_DriesDeryckere.tga.png\")
+	if albedo:
+		gun_mat.albedo_texture = albedo
+	var metalness = load(base_path + \"GAP_Examen_Gun_metalness_DriesDeryckere.tg.png\")
+	if metalness:
+		gun_mat.metallic = 1.0
+		gun_mat.metallic_texture = metalness
+	var roughness = load(base_path + \"GAP_Examen_Gun_roughness_DriesDeryckere.tg.png\")
+	if roughness:
+		gun_mat.roughness_texture = roughness
+	var occlusion = load(base_path + \"GAP_Examen_Gun_occlusion_DriesDeryckere.tg.png\")
+	if occlusion:
+		gun_mat.ao_enabled = true
+		gun_mat.ao_texture = occlusion
+	var normal = load(base_path + \"Map__8_Normal_Bump.jpg\")
+	if normal:
+		gun_mat.normal_enabled = true
+		gun_mat.normal_texture = normal
+
+	# Apply to all mesh surfaces
+	var model = $Model
+	if model:
+		model.material_override = gun_mat
+"
+
+[node name="SCAR" type="Node3D"]
+script = SubResource("GDScript_1")
+
+[node name="Model" type="MeshInstance3D" parent="."]
+mesh = ExtResource("1_0d3bs")
