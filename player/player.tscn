@@ -1,12 +1,16 @@
-[gd_scene load_steps=11 format=3 uid="uid://player001"]
+[gd_scene load_steps=15 format=3 uid="uid://player001"]
 
-[ext_resource type="Script" path="res://player/player.gd" id="1_player"]
-[ext_resource type="Resource" uid="uid://pistol_res" path="res://weapons/pistol.tres" id="2_pistol"]
-[ext_resource type="Resource" uid="uid://rifle_res" path="res://weapons/rifle.tres" id="3_rifle"]
-[ext_resource type="Resource" path="res://weapons/m4a1.tres" id="4_m4a1"]
-[ext_resource type="Resource" path="res://weapons/ak47.tres" id="5_ak47"]
-[ext_resource type="Resource" path="res://weapons/shotgun.tres" id="6_shotgun"]
-[ext_resource type="Resource" path="res://weapons/sniper_rifle.tres" id="7_sniper"]
+[ext_resource type="Script" uid="uid://bibyjqjl04513" path="res://player/player.gd" id="1_player"]
+[ext_resource type="Resource" uid="uid://lqhw2m1cv45x" path="res://weapons/pistol.tres" id="2_pistol"]
+[ext_resource type="Script" uid="uid://3woik3xs3f8f" path="res://weapons/weapon.gd" id="2_yw30f"]
+[ext_resource type="AudioStream" uid="uid://c3cuoub2qg31d" path="res://sounds/machine_gun_burst.mp3" id="4_gunsfx"]
+[ext_resource type="Resource" uid="uid://unj51qfpb3ra" path="res://weapons/scar.tres" id="5_scar"]
+[ext_resource type="AudioStream" uid="uid://bixwnwin2fsc8" path="res://sounds/gunshot_single.mp3" id="6_shotsfx"]
+[ext_resource type="AudioStream" uid="uid://d7587sli2oko" path="res://sounds/reload.mp3" id="7_reloadsfx"]
+[ext_resource type="Resource" uid="uid://pfumfavsqvv6" path="res://weapons/p90.tres" id="8_p90"]
+[ext_resource type="AudioStream" uid="uid://j0ifyx5j8qlo" path="res://sounds/footstep.mp3" id="9_footstep"]
+[ext_resource type="Resource" uid="uid://yrqctn3rkeep" path="res://weapons/strela.tres" id="10_strela"]
+[ext_resource type="AudioStream" uid="uid://chosxjk7a2f62" path="res://sounds/shotgun_cock.mp3" id="11_2ieo8"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.4
@@ -15,17 +19,17 @@ height = 1.8
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flash"]
 shading_mode = 0
 albedo_color = Color(1, 0.9, 0.3, 1)
-emission_enabled = true
-emission = Color(1, 0.8, 0.2, 1)
-emission_energy_multiplier = 3.0
 
 [sub_resource type="QuadMesh" id="QuadMesh_flash"]
-size = Vector2(0.15, 0.15)
 material = SubResource("StandardMaterial3D_flash")
+size = Vector2(0.15, 0.15)
 
 [node name="Player" type="CharacterBody3D" groups=["player"]]
+safe_margin = 0.05
+floor_max_angle = 0.87
+floor_snap_length = 0.15
 script = ExtResource("1_player")
-weapons = Array[Resource("res://weapons/weapon.gd")]([ExtResource("2_pistol"), ExtResource("4_m4a1"), ExtResource("5_ak47"), ExtResource("6_shotgun"), ExtResource("7_sniper")])
+weapons = Array[ExtResource("2_yw30f")]([ExtResource("2_pistol"), ExtResource("5_scar"), ExtResource("8_p90"), ExtResource("10_strela")])
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
@@ -47,10 +51,36 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.3)
 visible = false
 mesh = SubResource("QuadMesh_flash")
 
+[node name="SpringArm3D" type="SpringArm3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0, 0)
+spring_length = 3.0
+margin = 0.3
+
+[node name="ThirdPersonCamera" type="Camera3D" parent="Head/SpringArm3D"]
+
 [node name="ShootCooldown" type="Timer" parent="."]
 one_shot = true
 
 [node name="ReloadTimer" type="Timer" parent="."]
 one_shot = true
+
+[node name="GunSoundPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_gunsfx")
+volume_db = -5.0
+
+[node name="ShotSoundPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("6_shotsfx")
+volume_db = -5.0
+
+[node name="ReloadSoundPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("7_reloadsfx")
+volume_db = -3.0
+
+[node name="FootstepPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("9_footstep")
+volume_db = -8.0
+
+[node name="ShotgunCockPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("11_2ieo8")
 
 [connection signal="timeout" from="ReloadTimer" to="." method="_on_reload_timer_timeout"]
