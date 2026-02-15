@@ -1,6 +1,9 @@
 extends Control
 
 var map_select_container: VBoxContainer
+var event_map_select_container: VBoxContainer
+var event_select_container: VBoxContainer
+var selected_event_map := ""
 
 var maps := [
 	{"name": "Base 01", "scene": "res://levels/base01.tscn"},
@@ -9,11 +12,18 @@ var maps := [
 	{"name": "Western", "scene": "res://levels/western.tscn"},
 ]
 
+var events := [
+	{"name": "Zombie Apocalypse", "scene": "res://events/zombie_apocalypse.tscn"},
+]
+
 func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_setup_gun_image()
 	_setup_map_select()
+	_setup_event_map_select()
+	_setup_event_select()
 	$MenuContainer/PlayButton.mouse_entered.connect(_on_button_hover.bind($MenuContainer/PlayButton))
+	$MenuContainer/EventsButton.mouse_entered.connect(_on_button_hover.bind($MenuContainer/EventsButton))
 	$MenuContainer/QuitButton.mouse_entered.connect(_on_button_hover.bind($MenuContainer/QuitButton))
 
 func _process(_delta):
@@ -99,6 +109,98 @@ func _setup_map_select():
 	back_btn.pressed.connect(_on_back_pressed)
 	map_select_container.add_child(back_btn)
 
+func _setup_event_map_select():
+	event_map_select_container = VBoxContainer.new()
+	event_map_select_container.name = "EventMapSelectContainer"
+	event_map_select_container.set_anchors_preset(PRESET_CENTER)
+	event_map_select_container.offset_left = -180.0
+	event_map_select_container.offset_top = -160.0
+	event_map_select_container.offset_right = 180.0
+	event_map_select_container.offset_bottom = 160.0
+	event_map_select_container.add_theme_constant_override("separation", 20)
+	event_map_select_container.visible = false
+	add_child(event_map_select_container)
+
+	# Title
+	var title = Label.new()
+	title.text = "PICK YOUR MAP"
+	var title_settings = LabelSettings.new()
+	title_settings.font_size = 42
+	title_settings.font_color = Color(1, 0.3, 0.3)
+	title_settings.outline_size = 4
+	title_settings.outline_color = Color(0, 0, 0)
+	title.label_settings = title_settings
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	event_map_select_container.add_child(title)
+
+	# Map buttons (same maps, but routes to event select next)
+	for map_info in maps:
+		var btn = Button.new()
+		btn.text = map_info.name
+		btn.add_theme_font_size_override("font_size", 22)
+		btn.add_theme_stylebox_override("normal", _make_map_btn_style(Color(0.25, 0.1, 0.1)))
+		btn.add_theme_stylebox_override("hover", _make_map_btn_style(Color(0.45, 0.15, 0.15)))
+		btn.add_theme_stylebox_override("pressed", _make_map_btn_style(Color(0.18, 0.06, 0.06)))
+		btn.pressed.connect(_on_event_map_selected.bind(map_info.scene))
+		btn.mouse_entered.connect(_on_button_hover.bind(btn))
+		event_map_select_container.add_child(btn)
+
+	# Back button
+	var back_btn = Button.new()
+	back_btn.text = "Back"
+	back_btn.add_theme_font_size_override("font_size", 18)
+	back_btn.add_theme_stylebox_override("normal", _make_map_btn_style(Color(0.25, 0.12, 0.12)))
+	back_btn.add_theme_stylebox_override("hover", _make_map_btn_style(Color(0.4, 0.2, 0.2)))
+	back_btn.add_theme_stylebox_override("pressed", _make_map_btn_style(Color(0.18, 0.08, 0.08)))
+	back_btn.pressed.connect(_on_event_map_back_pressed)
+	event_map_select_container.add_child(back_btn)
+
+func _setup_event_select():
+	event_select_container = VBoxContainer.new()
+	event_select_container.name = "EventSelectContainer"
+	event_select_container.set_anchors_preset(PRESET_CENTER)
+	event_select_container.offset_left = -180.0
+	event_select_container.offset_top = -160.0
+	event_select_container.offset_right = 180.0
+	event_select_container.offset_bottom = 160.0
+	event_select_container.add_theme_constant_override("separation", 20)
+	event_select_container.visible = false
+	add_child(event_select_container)
+
+	# Title
+	var title = Label.new()
+	title.text = "PICK EVENT"
+	var title_settings = LabelSettings.new()
+	title_settings.font_size = 42
+	title_settings.font_color = Color(1, 0.3, 0.3)
+	title_settings.outline_size = 4
+	title_settings.outline_color = Color(0, 0, 0)
+	title.label_settings = title_settings
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	event_select_container.add_child(title)
+
+	# Event buttons
+	for event_info in events:
+		var btn = Button.new()
+		btn.text = event_info.name
+		btn.add_theme_font_size_override("font_size", 22)
+		btn.add_theme_stylebox_override("normal", _make_map_btn_style(Color(0.25, 0.1, 0.1)))
+		btn.add_theme_stylebox_override("hover", _make_map_btn_style(Color(0.45, 0.15, 0.15)))
+		btn.add_theme_stylebox_override("pressed", _make_map_btn_style(Color(0.18, 0.06, 0.06)))
+		btn.pressed.connect(_on_event_selected.bind(event_info.scene))
+		btn.mouse_entered.connect(_on_button_hover.bind(btn))
+		event_select_container.add_child(btn)
+
+	# Back button
+	var back_btn = Button.new()
+	back_btn.text = "Back"
+	back_btn.add_theme_font_size_override("font_size", 18)
+	back_btn.add_theme_stylebox_override("normal", _make_map_btn_style(Color(0.25, 0.12, 0.12)))
+	back_btn.add_theme_stylebox_override("hover", _make_map_btn_style(Color(0.4, 0.2, 0.2)))
+	back_btn.add_theme_stylebox_override("pressed", _make_map_btn_style(Color(0.18, 0.08, 0.08)))
+	back_btn.pressed.connect(_on_event_select_back_pressed)
+	event_select_container.add_child(back_btn)
+
 func _make_map_btn_style(color: Color) -> StyleBoxFlat:
 	var style = StyleBoxFlat.new()
 	style.bg_color = color
@@ -142,9 +244,30 @@ func _on_play_pressed():
 	$MenuContainer.visible = false
 	map_select_container.visible = true
 
+func _on_events_pressed():
+	$MenuContainer.visible = false
+	event_map_select_container.visible = true
+
 func _on_back_pressed():
 	map_select_container.visible = false
 	$MenuContainer.visible = true
+
+func _on_event_map_back_pressed():
+	event_map_select_container.visible = false
+	$MenuContainer.visible = true
+
+func _on_event_map_selected(map_path: String):
+	selected_event_map = map_path
+	event_map_select_container.visible = false
+	event_select_container.visible = true
+
+func _on_event_select_back_pressed():
+	event_select_container.visible = false
+	event_map_select_container.visible = true
+
+func _on_event_selected(event_scene_path: String):
+	get_tree().set_meta("event_map_path", selected_event_map)
+	get_tree().change_scene_to_file(event_scene_path)
 
 func _on_map_selected(scene_path: String):
 	get_tree().change_scene_to_file(scene_path)

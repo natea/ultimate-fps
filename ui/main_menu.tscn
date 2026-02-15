@@ -82,6 +82,14 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "Play"
 
+[node name="EventsButton" type="Button" parent="MenuContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "Events"
+
 [node name="QuitButton" type="Button" parent="MenuContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
@@ -91,4 +99,5 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "Quit"
 
 [connection signal="pressed" from="MenuContainer/PlayButton" to="." method="_on_play_pressed"]
+[connection signal="pressed" from="MenuContainer/EventsButton" to="." method="_on_events_pressed"]
 [connection signal="pressed" from="MenuContainer/QuitButton" to="." method="_on_quit_pressed"]
