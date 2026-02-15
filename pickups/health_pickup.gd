@@ -1,6 +1,6 @@
 extends Area3D
 
-@export var ammo_amount: int = 30
+@export var heal_amount: float = 40.0
 
 @onready var model = $Model
 
@@ -13,6 +13,8 @@ func _process(delta):
 
 func _on_body_entered(body):
 	if body.is_in_group("player"):
-		if body.has_method("add_ammo"):
-			body.add_ammo(ammo_amount)
+		if body.has_method("heal"):
+			body.heal(heal_amount)
+			if body.has_signal("notification_show"):
+				body.notification_show.emit("+" + str(int(heal_amount)) + " Health")
 		queue_free()

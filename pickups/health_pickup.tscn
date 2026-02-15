@@ -1,0 +1,45 @@
+[gd_scene load_steps=7 format=3 uid="uid://bpu45ud7d3mtn"]
+
+[ext_resource type="Script" uid="uid://d12xbybj4ag7k" path="res://pickups/health_pickup.gd" id="1_e688c"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_e688c"]
+size = Vector3(0.6, 0.4, 0.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e688c"]
+albedo_color = Color(0, 0, 0, 1)
+emission_enabled = true
+emission_energy_multiplier = 1.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_e688c"]
+size = Vector3(0.4, 0.12, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w0ydi"]
+albedo_color = Color(0, 0, 0, 1)
+emission_enabled = true
+emission_energy_multiplier = 1.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_w0ydi"]
+size = Vector3(0.12, 0.4, 0.12)
+
+[node name="HealthPickup" type="Area3D"]
+script = ExtResource("1_e688c")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+shape = SubResource("BoxShape3D_e688c")
+
+[node name="Model" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+
+[node name="CrossH" type="MeshInstance3D" parent="Model"]
+material_override = SubResource("StandardMaterial3D_e688c")
+mesh = SubResource("BoxMesh_e688c")
+
+[node name="CrossV" type="MeshInstance3D" parent="Model"]
+material_override = SubResource("StandardMaterial3D_w0ydi")
+mesh = SubResource("BoxMesh_w0ydi")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+light_color = Color(0.1, 0.9, 0.2, 1)
+omni_range = 3.0
