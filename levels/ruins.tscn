@@ -1,9 +1,13 @@
-[gd_scene load_steps=16 format=3 uid="uid://ruins001"]
+[gd_scene load_steps=35 format=3 uid="uid://ruins001"]
 
 [ext_resource type="PackedScene" uid="uid://player001" path="res://player/player.tscn" id="1_player"]
+[ext_resource type="Texture2D" uid="uid://co2v7m8e8posw" path="res://textures/environment/grass_diff.jpg" id="1_r4qgm"]
 [ext_resource type="PackedScene" uid="uid://hud001" path="res://ui/hud.tscn" id="2_hud"]
-[ext_resource type="PackedScene" uid="uid://scope_overlay" path="res://ui/scope_overlay.tscn" id="3_scope"]
+[ext_resource type="PackedScene" path="res://ui/scope_overlay.tscn" id="3_scope"]
 [ext_resource type="PackedScene" uid="uid://enemy001" path="res://enemies/enemy.tscn" id="4_enemy"]
+[ext_resource type="PackedScene" path="res://pickups/ammo_pickup.tscn" id="7_inaae"]
+[ext_resource type="Script" uid="uid://djosm1w1y1083" path="res://enemies/enemy.gd" id="8_4885a"]
+[ext_resource type="PackedScene" uid="uid://nudk5uwli6a0" path="res://pickups/weapon_pickup.tscn" id="9_sa8dh"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.35, 0.6, 0.85, 1)
@@ -22,41 +26,89 @@ ambient_light_source = 2
 ambient_light_color = Color(0.75, 0.8, 0.7, 1)
 ambient_light_energy = 0.6
 tonemap_mode = 2
-glow_enabled = true
 glow_intensity = 0.3
 fog_enabled = true
 fog_light_color = Color(0.7, 0.75, 0.65, 1)
 fog_density = 0.002
 
-[sub_resource type="StandardMaterial3D" id="Mat_Grass"]
-albedo_color = Color(0.25, 0.55, 0.2, 1)
-roughness = 0.9
+[sub_resource type="BoxShape3D" id="BoxShape_Ground"]
+size = Vector3(200, 1, 200)
 
-[sub_resource type="StandardMaterial3D" id="Mat_Stone"]
-albedo_color = Color(0.5, 0.48, 0.45, 1)
-roughness = 0.85
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r4qgm"]
+albedo_texture = ExtResource("1_r4qgm")
+uv1_scale = Vector3(10, 10, 10)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_8ks2w"]
+size = Vector2(200, 200)
+
+[sub_resource type="BoxShape3D" id="BoxShape_Platform"]
+size = Vector3(4, 0.5, 4)
 
 [sub_resource type="StandardMaterial3D" id="Mat_Temple"]
 albedo_color = Color(0.7, 0.65, 0.55, 1)
 roughness = 0.7
 
-[sub_resource type="BoxShape3D" id="BoxShape_Ground"]
-size = Vector3(200, 1, 200)
-
-[sub_resource type="BoxMesh" id="BoxMesh_Ground"]
-size = Vector3(200, 1, 200)
-material = SubResource("Mat_Grass")
-
-[sub_resource type="BoxShape3D" id="BoxShape_Platform"]
+[sub_resource type="BoxMesh" id="BoxMesh_Temple"]
+material = SubResource("Mat_Temple")
 size = Vector3(4, 0.5, 4)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Stone"]
+albedo_color = Color(0.5, 0.48, 0.45, 1)
+roughness = 0.85
 
 [sub_resource type="BoxMesh" id="BoxMesh_Platform"]
-size = Vector3(4, 0.5, 4)
 material = SubResource("Mat_Stone")
-
-[sub_resource type="BoxMesh" id="BoxMesh_Temple"]
 size = Vector3(4, 0.5, 4)
-material = SubResource("Mat_Temple")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4885a"]
+albedo_texture = ExtResource("1_r4qgm")
+uv1_scale = Vector3(3, 3, 3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8ks2w"]
+size = Vector3(15, 8, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_inaae"]
+size = Vector3(15, 8, 20)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_camek"]
+albedo_texture = ExtResource("1_r4qgm")
+uv1_scale = Vector3(3, 3, 3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sa8dh"]
+size = Vector3(12, 6, 18)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3xcpt"]
+size = Vector3(12, 6, 18)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qfe6t"]
+albedo_texture = ExtResource("1_r4qgm")
+uv1_scale = Vector3(3, 3, 3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fkcqn"]
+size = Vector3(20, 5, 15)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bx2vf"]
+size = Vector3(20, 5, 15)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yvr64"]
+albedo_texture = ExtResource("1_r4qgm")
+uv1_scale = Vector3(3, 3, 3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4fdiq"]
+size = Vector3(10, 4, 12)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wxmcg"]
+size = Vector3(10, 4, 12)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hvebt"]
+albedo_texture = ExtResource("1_r4qgm")
+uv1_scale = Vector3(3, 3, 3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_vb2id"]
+size = Vector3(14, 7, 16)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3y0jg"]
+size = Vector3(14, 7, 16)
 
 [node name="Ruins" type="Node3D"]
 
@@ -75,7 +127,9 @@ environment = SubResource("Environment_1")
 shape = SubResource("BoxShape_Ground")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
-mesh = SubResource("BoxMesh_Ground")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+material_override = SubResource("StandardMaterial3D_r4qgm")
+mesh = SubResource("PlaneMesh_8ks2w")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 30)
@@ -308,16 +362,131 @@ mesh = SubResource("BoxMesh_Platform")
 [node name="Enemies" type="Node3D" parent="."]
 
 [node name="Enemy1" parent="Enemies" instance=ExtResource("4_enemy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1, 15)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1, 10)
 
 [node name="Enemy2" parent="Enemies" instance=ExtResource("4_enemy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 1, 20)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1, 5)
 
 [node name="Enemy3" parent="Enemies" instance=ExtResource("4_enemy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 1, -20)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -15)
 
 [node name="Enemy4" parent="Enemies" instance=ExtResource("4_enemy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 1, -30)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 1, -5)
 
 [node name="Enemy5" parent="Enemies" instance=ExtResource("4_enemy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, -5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 1, -10)
+
+[node name="Enemy6" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("4_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1, 15)
+script = ExtResource("8_4885a")
+
+[node name="Enemy7" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("4_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1, -15)
+script = ExtResource("8_4885a")
+
+[node name="Enemy8" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("4_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, -25)
+script = ExtResource("8_4885a")
+
+[node name="Terrain" type="Node3D" parent="."]
+
+[node name="Hill1" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/Hill1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+material_override = SubResource("StandardMaterial3D_4885a")
+mesh = SubResource("BoxMesh_8ks2w")
+
+[node name="Collision" type="CollisionShape3D" parent="Terrain/Hill1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+shape = SubResource("BoxShape3D_inaae")
+
+[node name="Hill2" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -30, 0, 10)
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/Hill2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+material_override = SubResource("StandardMaterial3D_camek")
+mesh = SubResource("BoxMesh_sa8dh")
+
+[node name="Collision" type="CollisionShape3D" parent="Terrain/Hill2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+shape = SubResource("BoxShape3D_3xcpt")
+
+[node name="Hill3" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, 35)
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/Hill3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+material_override = SubResource("StandardMaterial3D_qfe6t")
+mesh = SubResource("BoxMesh_fkcqn")
+
+[node name="Collision" type="CollisionShape3D" parent="Terrain/Hill3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+shape = SubResource("BoxShape3D_bx2vf")
+
+[node name="Hill4" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, 25, 0, -25)
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/Hill4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+material_override = SubResource("StandardMaterial3D_yvr64")
+mesh = SubResource("BoxMesh_4fdiq")
+
+[node name="Collision" type="CollisionShape3D" parent="Terrain/Hill4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+shape = SubResource("BoxShape3D_wxmcg")
+
+[node name="Hill5" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(0.8660254, 0, -0.5, 0, 1, 0, 0.5, 0, 0.8660254, -25, 0, -20)
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/Hill5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+material_override = SubResource("StandardMaterial3D_hvebt")
+mesh = SubResource("BoxMesh_vb2id")
+
+[node name="Collision" type="CollisionShape3D" parent="Terrain/Hill5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+shape = SubResource("BoxShape3D_3y0jg")
+
+[node name="Pickups" type="Node3D" parent="."]
+
+[node name="Ammo1" parent="Pickups" instance=ExtResource("7_inaae")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, 5)
+
+[node name="Ammo2" parent="Pickups" instance=ExtResource("7_inaae")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1, 12)
+
+[node name="Ammo3" parent="Pickups" instance=ExtResource("7_inaae")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 1, -10)
+
+[node name="Ammo4" parent="Pickups" instance=ExtResource("7_inaae")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 1, -15)
+
+[node name="Ammo5" parent="Pickups" instance=ExtResource("7_inaae")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1, 20)
+
+[node name="Ammo6" parent="Pickups" instance=ExtResource("7_inaae")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1, 5)
+
+[node name="Ammo7" parent="Pickups" instance=ExtResource("7_inaae")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 25)
+
+[node name="Ammo8" parent="Pickups" instance=ExtResource("7_inaae")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1, -20)
+
+[node name="WeaponPickup1" parent="Pickups" instance=ExtResource("9_sa8dh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1, 8)
+
+[node name="WeaponPickup2" parent="Pickups" instance=ExtResource("9_sa8dh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1, -8)
+weapon_resource_path = "res://weapons/ak47.tres"
+
+[node name="WeaponPickup3" parent="Pickups" instance=ExtResource("9_sa8dh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
+weapon_resource_path = "res://weapons/sniper_rifle.tres"
+
+[node name="WeaponPickup4" parent="Pickups" instance=ExtResource("9_sa8dh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1, 20)
+weapon_resource_path = "res://weapons/shotgun.tres"
