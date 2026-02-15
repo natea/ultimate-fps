@@ -1,0 +1,206 @@
+[gd_scene load_steps=20 format=3 uid="uid://cdujgmqifec18"]
+
+[ext_resource type="Script" uid="uid://cp2cx42hugw6e" path="res://levels/base01.gd" id="1_a40g3"]
+[ext_resource type="PackedScene" uid="uid://cgbxse1j7hre6" path="res://maps/base01/source/nase01full.fbx" id="1_njdf5"]
+[ext_resource type="PackedScene" uid="uid://player001" path="res://player/player.tscn" id="2_050dl"]
+[ext_resource type="Script" uid="uid://bibyjqjl04513" path="res://player/player.gd" id="3_d3b6j"]
+[ext_resource type="Script" uid="uid://3woik3xs3f8f" path="res://weapons/weapon.gd" id="4_nthcw"]
+[ext_resource type="Resource" uid="uid://lqhw2m1cv45x" path="res://weapons/pistol.tres" id="5_db6jx"]
+[ext_resource type="PackedScene" uid="uid://hud001" path="res://ui/hud.tscn" id="6_d3b6j"]
+[ext_resource type="PackedScene" path="res://ui/scope_overlay.tscn" id="7_nthcw"]
+[ext_resource type="PackedScene" uid="uid://enemy001" path="res://enemies/enemy.tscn" id="8_y6rcs"]
+[ext_resource type="Script" uid="uid://djosm1w1y1083" path="res://enemies/enemy.gd" id="9_a40g3"]
+[ext_resource type="PackedScene" uid="uid://dpsqny75d2u4" path="res://pickups/ammo_pickup.tscn" id="10_ntn50"]
+[ext_resource type="Script" uid="uid://cu330g6bc6pmb" path="res://pickups/ammo_pickup.gd" id="11_5akyb"]
+[ext_resource type="PackedScene" uid="uid://bpu45ud7d3mtn" path="res://pickups/health_pickup.tscn" id="12_q1v5o"]
+[ext_resource type="Script" uid="uid://d12xbybj4ag7k" path="res://pickups/health_pickup.gd" id="13_k7513"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_n0n8i"]
+sky_top_color = Color(0.3, 0.5, 0.8, 1)
+sky_horizon_color = Color(0.6, 0.7, 0.85, 1)
+
+[sub_resource type="Sky" id="Sky_rtp41"]
+sky_material = SubResource("ProceduralSkyMaterial_n0n8i")
+
+[sub_resource type="Environment" id="Environment_x8cip"]
+background_mode = 2
+sky = SubResource("Sky_rtp41")
+ambient_light_source = 3
+ambient_light_energy = 0.5
+
+[sub_resource type="GDScript" id="GDScript_1"]
+script/source = "extends CanvasLayer
+
+@onready var ammo_label = $AmmoContainer/AmmoLabel
+@onready var weapon_label = $WeaponLabel
+@onready var crosshair = $Crosshair
+@onready var health_bar = $BarsContainer/HealthBar
+@onready var stamina_bar = $BarsContainer/StaminaBar
+
+func _ready():
+	# Find player and connect signals
+	await get_tree().process_frame
+	var player = get_tree().get_first_node_in_group(\"player\")
+	if player:
+		player.ammo_updated.connect(_on_ammo_updated)
+		player.weapon_changed.connect(_on_weapon_changed)
+		player.health_updated.connect(_on_health_updated)
+		player.stamina_updated.connect(_on_stamina_updated)
+
+func _on_ammo_updated(current: int, reserve: int):
+	ammo_label.text = str(current) + \" / \" + str(reserve)
+
+func _on_weapon_changed(weapon_name: String):
+	weapon_label.text = weapon_name
+
+func _on_health_updated(current: float, max_val: float):
+	health_bar.value = (current / max_val) * 100
+
+func _on_stamina_updated(current: float, max_val: float):
+	stamina_bar.value = (current / max_val) * 100
+"
+
+[sub_resource type="GDScript" id="GDScript_rsncr"]
+script/source = "extends CanvasLayer
+
+func _ready():
+	visible = false
+
+func show_scope():
+	visible = true
+
+func hide_scope():
+	visible = false
+"
+
+[node name="Base01" type="Node3D"]
+script = ExtResource("1_a40g3")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707, 0.707, 0, -0.707, 0.707, 0, 30, 0)
+light_energy = 1.2
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_x8cip")
+
+[node name="Map" type="Node3D" parent="." instance=ExtResource("1_njdf5")]
+
+[node name="Player" type="CharacterBody3D" parent="." groups=["player"] instance=ExtResource("2_050dl")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 20)
+script = ExtResource("3_d3b6j")
+weapons = Array[ExtResource("4_nthcw")]([ExtResource("5_db6jx")])
+
+[node name="HUD" type="CanvasLayer" parent="." instance=ExtResource("6_d3b6j")]
+script = SubResource("GDScript_1")
+
+[node name="KillCounter" type="Label" parent="HUD"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -676.0
+offset_top = 10.0
+offset_right = -476.0
+offset_bottom = 50.0
+grow_horizontal = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 24
+text = "Kills: 0"
+horizontal_alignment = 1
+
+[node name="ScopeOverlay" type="CanvasLayer" parent="." groups=["scope_overlay"] instance=ExtResource("7_nthcw")]
+layer = 10
+script = SubResource("GDScript_rsncr")
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="Enemy1" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("8_y6rcs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 16, -30)
+script = ExtResource("9_a40g3")
+
+[node name="Enemy2" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("8_y6rcs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 16, 20)
+script = ExtResource("9_a40g3")
+
+[node name="Enemy3" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("8_y6rcs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 16, -50)
+script = ExtResource("9_a40g3")
+
+[node name="Enemy4" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("8_y6rcs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, 16, 10)
+script = ExtResource("9_a40g3")
+
+[node name="Enemy5" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("8_y6rcs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 16, -20)
+script = ExtResource("9_a40g3")
+
+[node name="Enemy6" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("8_y6rcs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 16, 50)
+script = ExtResource("9_a40g3")
+
+[node name="Enemy7" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("8_y6rcs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 16, -60)
+script = ExtResource("9_a40g3")
+
+[node name="Enemy8" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("8_y6rcs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 16, 30)
+script = ExtResource("9_a40g3")
+
+[node name="Enemy9" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("8_y6rcs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -70, 16, -40)
+script = ExtResource("9_a40g3")
+
+[node name="Enemy10" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("8_y6rcs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 16, 60)
+script = ExtResource("9_a40g3")
+
+[node name="Enemy11" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("8_y6rcs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 16, 0)
+script = ExtResource("9_a40g3")
+
+[node name="Enemy12" type="CharacterBody3D" parent="Enemies" groups=["enemy"] instance=ExtResource("8_y6rcs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -90, 16, -20)
+script = ExtResource("9_a40g3")
+
+[node name="Pickups" type="Node3D" parent="."]
+
+[node name="Ammo1" type="Area3D" parent="Pickups" instance=ExtResource("10_ntn50")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 16, -15)
+script = ExtResource("11_5akyb")
+
+[node name="Ammo2" type="Area3D" parent="Pickups" instance=ExtResource("10_ntn50")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -65, 16, 30)
+script = ExtResource("11_5akyb")
+
+[node name="Ammo3" type="Area3D" parent="Pickups" instance=ExtResource("10_ntn50")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, -40)
+script = ExtResource("11_5akyb")
+
+[node name="Ammo4" type="Area3D" parent="Pickups" instance=ExtResource("10_ntn50")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 16, 45)
+script = ExtResource("11_5akyb")
+
+[node name="Ammo5" type="Area3D" parent="Pickups" instance=ExtResource("10_ntn50")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 16, 10)
+script = ExtResource("11_5akyb")
+
+[node name="Ammo6" type="Area3D" parent="Pickups" instance=ExtResource("10_ntn50")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -85, 16, -50)
+script = ExtResource("11_5akyb")
+
+[node name="HealthPickup1" type="Area3D" parent="Pickups" instance=ExtResource("12_q1v5o")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 16, -25)
+script = ExtResource("13_k7513")
+
+[node name="HealthPickup2" type="Area3D" parent="Pickups" instance=ExtResource("12_q1v5o")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55, 16, 40)
+script = ExtResource("13_k7513")
+
+[node name="HealthPickup3" type="Area3D" parent="Pickups" instance=ExtResource("12_q1v5o")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 16, -10)
+script = ExtResource("13_k7513")
+
+[node name="HealthPickup4" type="Area3D" parent="Pickups" instance=ExtResource("12_q1v5o")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -75, 16, 0)
+script = ExtResource("13_k7513")

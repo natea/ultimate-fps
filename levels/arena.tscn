@@ -1,6 +1,8 @@
-[gd_scene load_steps=13 format=3 uid="uid://rena001"]
+[gd_scene load_steps=15 format=3 uid="uid://rena001"]
 
+[ext_resource type="Texture2D" uid="uid://cpxltfyakr5tg" path="res://textures/environment/concrete_floor_diff.jpg" id="1_65vf4"]
 [ext_resource type="PackedScene" uid="uid://player001" path="res://player/player.tscn" id="1_player"]
+[ext_resource type="Texture2D" uid="uid://cgbdlpyiq1e74" path="res://textures/environment/concrete_floor_normal.jpg" id="2_7tkjc"]
 [ext_resource type="PackedScene" uid="uid://hud001" path="res://ui/hud.tscn" id="2_hud"]
 [ext_resource type="PackedScene" path="res://pickups/ammo_pickup.tscn" id="3_ammo"]
 [ext_resource type="PackedScene" path="res://ui/scope_overlay.tscn" id="4_scope"]
@@ -30,12 +32,16 @@ glow_intensity = 0.5
 [sub_resource type="BoxShape3D" id="BoxShape3D_1"]
 size = Vector3(40, 1, 40)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
-albedo_color = Color(0.3, 0.35, 0.4, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7tkjc"]
+albedo_texture = ExtResource("1_65vf4")
+normal_enabled = true
+normal_texture = ExtResource("2_7tkjc")
+uv1_scale = Vector3(10, 10, 10)
 
-[sub_resource type="BoxMesh" id="BoxMesh_1"]
-material = SubResource("StandardMaterial3D_1")
-size = Vector3(40, 1, 40)
+[sub_resource type="PlaneMesh" id="PlaneMesh_7tkjc"]
+size = Vector2(40, 40)
+subdivide_width = 1
+subdivide_depth = 1
 
 [node name="Arena" type="Node3D"]
 
@@ -54,7 +60,9 @@ environment = SubResource("Environment_1")
 shape = SubResource("BoxShape3D_1")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
-mesh = SubResource("BoxMesh_1")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+material_override = SubResource("StandardMaterial3D_7tkjc")
+mesh = SubResource("PlaneMesh_7tkjc")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)

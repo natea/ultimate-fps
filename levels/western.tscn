@@ -1,0 +1,250 @@
+[gd_scene load_steps=12 format=3 uid="uid://d1qxtinoi53pi"]
+
+[ext_resource type="Script" uid="uid://nqyfu1ngywx7" path="res://levels/western.gd" id="1_rp81q"]
+[ext_resource type="PackedScene" uid="uid://enemy001" path="res://enemies/enemy.tscn" id="2_1tpc8"]
+[ext_resource type="PackedScene" uid="uid://drv3pxfeo0s3s" path="res://levels/western/western.fbx" id="2_yk5iw"]
+[ext_resource type="PackedScene" uid="uid://player001" path="res://player/player.tscn" id="3_kjjgb"]
+[ext_resource type="PackedScene" uid="uid://hud001" path="res://ui/hud.tscn" id="10_ulkp0"]
+[ext_resource type="PackedScene" path="res://ui/scope_overlay.tscn" id="11_g4j8h"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1tpc8"]
+sky_top_color = Color(0.35, 0.55, 0.85, 1)
+sky_horizon_color = Color(0.75, 0.65, 0.5, 1)
+ground_bottom_color = Color(0.4, 0.3, 0.2, 1)
+ground_horizon_color = Color(0.75, 0.65, 0.5, 1)
+
+[sub_resource type="Sky" id="Sky_qraoy"]
+sky_material = SubResource("ProceduralSkyMaterial_1tpc8")
+
+[sub_resource type="Environment" id="Environment_po0q1"]
+background_mode = 2
+sky = SubResource("Sky_qraoy")
+ambient_light_source = 3
+ambient_light_energy = 0.5
+
+[sub_resource type="GDScript" id="GDScript_1"]
+script/source = "extends CanvasLayer
+
+@onready var ammo_label = $AmmoContainer/AmmoLabel
+@onready var weapon_label = $WeaponLabel
+@onready var crosshair = $Crosshair
+@onready var health_bar = $BarsContainer/HealthBar
+@onready var stamina_bar = $BarsContainer/StaminaBar
+
+func _ready():
+	# Find player and connect signals
+	await get_tree().process_frame
+	var player = get_tree().get_first_node_in_group(\"player\")
+	if player:
+		player.ammo_updated.connect(_on_ammo_updated)
+		player.weapon_changed.connect(_on_weapon_changed)
+		player.health_updated.connect(_on_health_updated)
+		player.stamina_updated.connect(_on_stamina_updated)
+
+func _on_ammo_updated(current: int, reserve: int):
+	ammo_label.text = str(current) + \" / \" + str(reserve)
+
+func _on_weapon_changed(weapon_name: String):
+	weapon_label.text = weapon_name
+
+func _on_health_updated(current: float, max_val: float):
+	health_bar.value = (current / max_val) * 100
+
+func _on_stamina_updated(current: float, max_val: float):
+	stamina_bar.value = (current / max_val) * 100
+"
+
+[sub_resource type="GDScript" id="GDScript_gu35n"]
+script/source = "extends CanvasLayer
+
+func _ready():
+	visible = false
+
+func show_scope():
+	visible = true
+
+func hide_scope():
+	visible = false
+"
+
+[node name="Western" type="Node3D"]
+script = ExtResource("1_rp81q")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.8660254, -0.35355338, 0.35355338, 0, 0.70710677, 0.70710677, -0.5, -0.6123724, 0.6123724, 0, 0, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_po0q1")
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="Enemy1" parent="Enemies" instance=ExtResource("2_1tpc8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 2, -10)
+move_speed = null
+chase_speed = null
+attack_range = null
+detection_range = null
+health = null
+gun_damage = null
+fire_rate = null
+accuracy = null
+is_sniper = null
+has_shield = null
+is_boss = null
+gun_type = null
+
+[node name="Enemy2" parent="Enemies" instance=ExtResource("2_1tpc8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 2, 15)
+move_speed = null
+chase_speed = null
+attack_range = null
+detection_range = null
+health = null
+gun_damage = null
+fire_rate = null
+accuracy = null
+is_sniper = null
+has_shield = null
+is_boss = null
+gun_type = null
+
+[node name="Enemy3" parent="Enemies" instance=ExtResource("2_1tpc8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 2, -20)
+move_speed = null
+chase_speed = null
+attack_range = null
+detection_range = null
+health = null
+gun_damage = null
+fire_rate = null
+accuracy = null
+is_sniper = null
+has_shield = null
+is_boss = null
+gun_type = null
+
+[node name="Enemy4" parent="Enemies" instance=ExtResource("2_1tpc8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 2, -25)
+move_speed = null
+chase_speed = null
+attack_range = null
+detection_range = null
+health = null
+gun_damage = null
+fire_rate = null
+accuracy = null
+is_sniper = null
+has_shield = null
+is_boss = null
+gun_type = null
+
+[node name="Enemy5" parent="Enemies" instance=ExtResource("2_1tpc8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2, 20)
+move_speed = null
+chase_speed = null
+attack_range = null
+detection_range = null
+health = null
+gun_damage = null
+fire_rate = null
+accuracy = null
+is_sniper = null
+has_shield = null
+is_boss = null
+gun_type = null
+
+[node name="Enemy6" parent="Enemies" instance=ExtResource("2_1tpc8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 2, -5)
+move_speed = null
+chase_speed = null
+attack_range = null
+detection_range = null
+health = null
+gun_damage = null
+fire_rate = null
+accuracy = null
+is_sniper = null
+has_shield = null
+is_boss = null
+gun_type = null
+
+[node name="Enemy7" parent="Enemies" instance=ExtResource("2_1tpc8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 2, 10)
+move_speed = null
+chase_speed = null
+attack_range = null
+detection_range = null
+health = null
+gun_damage = null
+fire_rate = null
+accuracy = null
+is_sniper = null
+has_shield = null
+is_boss = null
+gun_type = null
+
+[node name="Enemy8" parent="Enemies" instance=ExtResource("2_1tpc8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 2, 25)
+move_speed = null
+chase_speed = null
+attack_range = null
+detection_range = null
+health = null
+gun_damage = null
+fire_rate = null
+accuracy = null
+is_sniper = null
+has_shield = null
+is_boss = null
+gun_type = null
+
+[node name="Enemy9" parent="Enemies" instance=ExtResource("2_1tpc8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 2, -15)
+move_speed = null
+chase_speed = null
+attack_range = null
+detection_range = null
+health = null
+gun_damage = null
+fire_rate = null
+accuracy = null
+is_sniper = null
+has_shield = null
+is_boss = null
+gun_type = null
+
+[node name="Enemy10" parent="Enemies" instance=ExtResource("2_1tpc8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 2, -20)
+move_speed = null
+chase_speed = null
+attack_range = null
+detection_range = null
+health = null
+gun_damage = null
+fire_rate = null
+accuracy = null
+is_sniper = null
+has_shield = null
+is_boss = null
+gun_type = null
+
+[node name="Pickups" type="Node3D" parent="."]
+
+[node name="Map" parent="." instance=ExtResource("2_yk5iw")]
+
+[node name="Player" parent="." instance=ExtResource("3_kjjgb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="HUD" parent="." instance=ExtResource("10_ulkp0")]
+script = SubResource("GDScript_1")
+
+[node name="KillCounter" type="Label" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -1.0
+offset_bottom = 23.0
+text = "Kills: 0"
+
+[node name="ScopeOverlay" parent="." instance=ExtResource("11_g4j8h")]
+script = SubResource("GDScript_gu35n")

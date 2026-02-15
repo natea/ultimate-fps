@@ -1,0 +1,130 @@
+[gd_scene load_steps=12 format=3 uid="uid://s6e8x6w86me3"]
+
+[ext_resource type="Script" uid="uid://cx57v5ht3p5a2" path="res://levels/deserttown.gd" id="1_rlnxt"]
+[ext_resource type="PackedScene" uid="uid://iyupymis5ypd" path="res://maps/deserttown/source/deserttown22.fbx" id="2_dsues"]
+[ext_resource type="PackedScene" uid="uid://enemy001" path="res://enemies/enemy.tscn" id="2_mpmy1"]
+[ext_resource type="PackedScene" uid="uid://player001" path="res://player/player.tscn" id="3_mdqdy"]
+[ext_resource type="PackedScene" uid="uid://hud001" path="res://ui/hud.tscn" id="10_tupa7"]
+[ext_resource type="PackedScene" path="res://ui/scope_overlay.tscn" id="11_ilhr5"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_5mj53"]
+sky_top_color = Color(0.35, 0.55, 0.85, 1)
+sky_horizon_color = Color(0.65, 0.75, 0.85, 1)
+ground_bottom_color = Color(0.3, 0.25, 0.2, 1)
+ground_horizon_color = Color(0.65, 0.65, 0.55, 1)
+
+[sub_resource type="Sky" id="Sky_fh5mf"]
+sky_material = SubResource("ProceduralSkyMaterial_5mj53")
+
+[sub_resource type="Environment" id="Environment_a4fei"]
+background_mode = 2
+sky = SubResource("Sky_fh5mf")
+ambient_light_source = 3
+ambient_light_energy = 0.5
+
+[sub_resource type="GDScript" id="GDScript_1"]
+script/source = "extends CanvasLayer
+
+@onready var ammo_label = $AmmoContainer/AmmoLabel
+@onready var weapon_label = $WeaponLabel
+@onready var crosshair = $Crosshair
+@onready var health_bar = $BarsContainer/HealthBar
+@onready var stamina_bar = $BarsContainer/StaminaBar
+
+func _ready():
+	# Find player and connect signals
+	await get_tree().process_frame
+	var player = get_tree().get_first_node_in_group(\"player\")
+	if player:
+		player.ammo_updated.connect(_on_ammo_updated)
+		player.weapon_changed.connect(_on_weapon_changed)
+		player.health_updated.connect(_on_health_updated)
+		player.stamina_updated.connect(_on_stamina_updated)
+
+func _on_ammo_updated(current: int, reserve: int):
+	ammo_label.text = str(current) + \" / \" + str(reserve)
+
+func _on_weapon_changed(weapon_name: String):
+	weapon_label.text = weapon_name
+
+func _on_health_updated(current: float, max_val: float):
+	health_bar.value = (current / max_val) * 100
+
+func _on_stamina_updated(current: float, max_val: float):
+	stamina_bar.value = (current / max_val) * 100
+"
+
+[sub_resource type="GDScript" id="GDScript_mpmy1"]
+script/source = "extends CanvasLayer
+
+func _ready():
+	visible = false
+
+func show_scope():
+	visible = true
+
+func hide_scope():
+	visible = false
+"
+
+[node name="DesertTown" type="Node3D"]
+script = ExtResource("1_rlnxt")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.8660254, -0.35355338, 0.35355338, 0, 0.70710677, 0.70710677, -0.5, -0.6123724, 0.6123724, 0, 0, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_a4fei")
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="Enemy1" parent="Enemies" instance=ExtResource("2_mpmy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 2, -240)
+
+[node name="Enemy2" parent="Enemies" instance=ExtResource("2_mpmy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 2, -250)
+
+[node name="Enemy3" parent="Enemies" instance=ExtResource("2_mpmy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 2, -270)
+
+[node name="Enemy4" parent="Enemies" instance=ExtResource("2_mpmy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 2, -280)
+
+[node name="Enemy5" parent="Enemies" instance=ExtResource("2_mpmy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2, -300)
+
+[node name="Enemy6" parent="Enemies" instance=ExtResource("2_mpmy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 2, -230)
+
+[node name="Enemy7" parent="Enemies" instance=ExtResource("2_mpmy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 2, -260)
+
+[node name="Enemy8" parent="Enemies" instance=ExtResource("2_mpmy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 2, -310)
+
+[node name="Enemy9" parent="Enemies" instance=ExtResource("2_mpmy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 2, -220)
+
+[node name="Enemy10" parent="Enemies" instance=ExtResource("2_mpmy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 2, -290)
+
+[node name="Pickups" type="Node3D" parent="."]
+
+[node name="Map" parent="." instance=ExtResource("2_dsues")]
+
+[node name="Player" parent="." instance=ExtResource("3_mdqdy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, -265)
+
+[node name="HUD" parent="." instance=ExtResource("10_tupa7")]
+script = SubResource("GDScript_1")
+
+[node name="KillCounter" type="Label" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -50.0
+offset_bottom = 23.0
+text = "Kills: 0"
+
+[node name="ScopeOverlay" parent="." instance=ExtResource("11_ilhr5")]
+script = SubResource("GDScript_mpmy1")
