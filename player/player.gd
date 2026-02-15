@@ -230,11 +230,9 @@ func _setup_tp_model():
 			anim.loop_mode = Animation.LOOP_LINEAR
 			tp_anim_name = anim_n
 
-		# Start in idle pose (pause at frame 0)
+		# Start in idle pose
 		if tp_anim_name != "":
-			tp_anim_player.play(tp_anim_name)
-			tp_anim_player.seek(0, true)
-			tp_anim_player.pause()
+			tp_anim_player.stop()
 
 	# Strip root motion from animation to prevent jitter
 	if tp_anim_player and tp_anim_name != "":
@@ -272,15 +270,17 @@ func _exit_tree():
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func _notification(what):
-	# Restore mouse when game loses focus (alt-tab, crash, etc.)
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		mouse_captured = false
 	elif what == NOTIFICATION_APPLICATION_FOCUS_IN:
-		if mouse_captured:
-			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		mouse_captured = true
 
 func _physics_process(delta):
+	# Keep mouse captured during gameplay
+	if mouse_captured and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
 	handle_controls(delta)
 	handle_gravity(delta)
 	
@@ -375,26 +375,18 @@ func _physics_process(delta):
 		if is_crouching and is_moving and tp_crouch_anim_name != "":
 			target_anim = tp_crouch_anim_name
 		elif is_crouching and not is_moving:
-			# Crouch idle — pause crouch anim at frame 0
-			if tp_crouch_anim_name != "" and tp_current_anim != "crouch_idle":
-				tp_anim_player.play(tp_crouch_anim_name)
-				tp_anim_player.seek(0, true)
-				tp_anim_player.pause()
-				tp_current_anim = "crouch_idle"
-			target_anim = ""
+			target_anim = "crouch_idle"
 		elif is_moving and is_on_floor():
 			target_anim = tp_anim_name
 		else:
-			# Standing idle
-			if tp_current_anim != "idle":
-				tp_anim_player.pause()
-				tp_anim_player.seek(0, true)
-				tp_current_anim = "idle"
-			target_anim = ""
+			target_anim = "idle"
 
-		if target_anim != "" and tp_current_anim != target_anim:
-			tp_anim_player.play(target_anim)
-			tp_anim_player.speed_scale = 1.0
+		if target_anim != tp_current_anim:
+			if target_anim == "idle" or target_anim == "crouch_idle":
+				tp_anim_player.speed_scale = 0.0
+			else:
+				tp_anim_player.speed_scale = 1.0
+				tp_anim_player.play(target_anim)
 			tp_current_anim = target_anim
 
 	# Noise decay
@@ -1042,7 +1034,13 @@ func _strip_root_motion(anim: Animation):
 	for i in anim.get_track_count():
 		var path = str(anim.track_get_path(i))
 		if "Hips" in path and anim.track_get_type(i) == Animation.TYPE_POSITION_3D:
-			for k in anim.track_get_key_count(i):
-				var pos = anim.track_get_key_value(i, k)
-				# Keep Y (height) but zero X and Z (horizontal drift)
-				anim.track_set_key_value(i, k, Vector3(0, pos.y, 0))
+			# Get average Y to keep a stable height
+			var avg_y := 0.0
+			var key_count = anim.track_get_key_count(i)
+			for k in key_count:
+				avg_y += anim.track_get_key_value(i, k).y
+			if key_count > 0:
+				avg_y /= key_count
+			# Zero all movement, use constant height
+			for k in key_count:
+				anim.track_set_key_value(i, k, Vector3(0, avg_y, 0))
