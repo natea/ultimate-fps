@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://nudk5uwli6a0"]
+
+[ext_resource type="Script" uid="uid://drykrkoa048fq" path="res://pickups/weapon_pickup.gd" id="1_kjngm"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_kjngm"]
+radius = 1.5
+
+[node name="WeaponPickup" type="Area3D"]
+script = ExtResource("1_kjngm")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_kjngm")
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="GlowLight" type="OmniLight3D" parent="."]
+light_color = Color(0.2, 0.8, 1, 1)
+light_energy = 2.0
+omni_range = 3.0
