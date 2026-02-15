@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "godot-mcp": {
+      "command": "python3",
+      "args": ["/Users/finn/Documents/ultimate-fps/addons/gdai-mcp-plugin-godot/gdai_mcp_server.py"]
+    }
+  }
+}
