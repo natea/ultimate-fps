@@ -20,6 +20,11 @@ func _ready():
 	# Generate collision from map meshes (same as single-player levels)
 	_generate_map_collision()
 
+	# Add weapon spawner
+	var spawner = load("res://multiplayer/weapon_spawner.gd").new()
+	spawner.name = "WeaponSpawner"
+	add_child(spawner)
+
 	# Wait for all players to load, then spawn everyone
 	if NetworkManager.is_host():
 		# If all already loaded (small player count), spawn immediately
