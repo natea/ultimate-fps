@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://rena001"]
+[gd_scene load_steps=16 format=3 uid="uid://rena001"]
 
 [ext_resource type="Texture2D" uid="uid://cpxltfyakr5tg" path="res://textures/environment/concrete_floor_diff.jpg" id="1_65vf4"]
 [ext_resource type="PackedScene" uid="uid://player001" path="res://player/player.tscn" id="1_player"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" path="res://ui/scope_overlay.tscn" id="4_scope"]
 [ext_resource type="PackedScene" uid="uid://enemy001" path="res://enemies/enemy.tscn" id="5_s8irp"]
 [ext_resource type="Script" uid="uid://djosm1w1y1083" path="res://enemies/enemy.gd" id="6_65vf4"]
+[ext_resource type="Script" path="res://multiplayer/spawn_point.gd" id="8_spawn"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.25, 0.55, 0.9, 1)
@@ -91,3 +92,27 @@ script = ExtResource("6_65vf4")
 [node name="Enemy3" type="CharacterBody3D" parent="." groups=["enemy"] instance=ExtResource("5_s8irp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -12)
 script = ExtResource("6_65vf4")
+
+[node name="SpawnPoint1" type="Node3D" parent="." groups=["spawn_point"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 2, -15)
+script = ExtResource("8_spawn")
+
+[node name="SpawnPoint2" type="Node3D" parent="." groups=["spawn_point"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 2, -15)
+script = ExtResource("8_spawn")
+
+[node name="SpawnPoint3" type="Node3D" parent="." groups=["spawn_point"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 2, 15)
+script = ExtResource("8_spawn")
+
+[node name="SpawnPoint4" type="Node3D" parent="." groups=["spawn_point"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 2, 15)
+script = ExtResource("8_spawn")
+
+[node name="SpawnPoint5" type="Node3D" parent="." groups=["spawn_point"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+script = ExtResource("8_spawn")
+
+[node name="SpawnPoint6" type="Node3D" parent="." groups=["spawn_point"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2, 10)
+script = ExtResource("8_spawn")
