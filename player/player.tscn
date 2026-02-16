@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://player001"]
+[gd_scene load_steps=16 format=3 uid="uid://player001"]
 
 [ext_resource type="Script" uid="uid://bibyjqjl04513" path="res://player/player.gd" id="1_player"]
 [ext_resource type="Resource" uid="uid://lqhw2m1cv45x" path="res://weapons/pistol.tres" id="2_pistol"]
@@ -11,6 +11,17 @@
 [ext_resource type="AudioStream" uid="uid://j0ifyx5j8qlo" path="res://sounds/footstep.mp3" id="9_footstep"]
 [ext_resource type="Resource" uid="uid://yrqctn3rkeep" path="res://weapons/strela.tres" id="10_strela"]
 [ext_resource type="AudioStream" uid="uid://chosxjk7a2f62" path="res://sounds/shotgun_cock.mp3" id="11_2ieo8"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_1"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath("Head:rotation")
+properties/2/spawn = true
+properties/2/replication_mode = 1
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.4
@@ -82,5 +93,8 @@ volume_db = -8.0
 
 [node name="ShotgunCockPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("11_2ieo8")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_1")
 
 [connection signal="timeout" from="ReloadTimer" to="." method="_on_reload_timer_timeout"]
