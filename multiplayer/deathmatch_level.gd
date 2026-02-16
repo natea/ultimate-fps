@@ -17,13 +17,46 @@ func _ready():
 			sp.position = Vector3(i * 5 - 7.5, 2, 0)
 			spawn_points.append(sp)
 
+	# Remove single-player player and HUD (we spawn our own)
+	var sp_player = get_parent().get_node_or_null("Player")
+	if sp_player:
+		sp_player.queue_free()
+	var sp_hud = get_parent().get_node_or_null("HUD")
+	if sp_hud:
+		sp_hud.queue_free()
+	var sp_scope = get_parent().get_node_or_null("ScopeOverlay")
+	if sp_scope:
+		sp_scope.queue_free()
+	# Remove single-player enemies
+	for enemy in get_tree().get_nodes_in_group("enemy"):
+		enemy.queue_free()
+
+	# Also look for spawn points in parent scene
+	for child in get_parent().get_children():
+		if child is SpawnPoint:
+			spawn_points.append(child)
+
 	# Generate collision from map meshes (same as single-player levels)
 	_generate_map_collision()
+
+	# Add match manager
+	var match_mgr = MatchManager.new()
+	match_mgr.name = "MatchManager"
+	add_child(match_mgr)
+
+	# Add multiplayer HUD
+	var mp_hud = preload("res://multiplayer/mp_hud.tscn").instantiate()
+	add_child(mp_hud)
 
 	# Add weapon spawner
 	var spawner = load("res://multiplayer/weapon_spawner.gd").new()
 	spawner.name = "WeaponSpawner"
 	add_child(spawner)
+
+	# Handle server disconnect
+	NetworkManager.server_disconnected.connect(func():
+		get_tree().change_scene_to_file("res://ui/main_menu.tscn")
+	)
 
 	# Wait for all players to load, then spawn everyone
 	if NetworkManager.is_host():
@@ -65,11 +98,27 @@ func _spawn_player(peer_id: int, pos: Vector3):
 		var tp_cam = player.get_node_or_null("Head/SpringArm3D/ThirdPersonCamera")
 		if tp_cam:
 			tp_cam.current = false
+		# Add floating name tag
+		var label_3d = Label3D.new()
+		label_3d.text = NetworkManager.get_player_name(peer_id)
+		label_3d.font_size = 48
+		label_3d.position = Vector3(0, 2.2, 0)
+		label_3d.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label_3d.no_depth_test = true
+		label_3d.outline_size = 8
+		player.add_child(label_3d)
 	else:
 		# Local player gets camera
 		var cam = player.get_node_or_null("Head/Camera")
 		if cam:
 			cam.make_current()
+
+func remove_player(peer_id: int):
+	if player_nodes.has(peer_id):
+		var node = player_nodes[peer_id]
+		if is_instance_valid(node):
+			node.queue_free()
+		player_nodes.erase(peer_id)
 
 func get_random_spawn_position(exclude_positions: Array[Vector3] = []) -> Vector3:
 	if spawn_points.is_empty():
