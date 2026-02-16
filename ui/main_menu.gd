@@ -26,6 +26,14 @@ func _ready():
 	$MenuContainer/PlayButton.mouse_entered.connect(_on_button_hover.bind($MenuContainer/PlayButton))
 	$MenuContainer/EventsButton.mouse_entered.connect(_on_button_hover.bind($MenuContainer/EventsButton))
 	$MenuContainer/QuitButton.mouse_entered.connect(_on_button_hover.bind($MenuContainer/QuitButton))
+	# Add multiplayer button (insert before Quit)
+	var mp_button = Button.new()
+	mp_button.text = "Multiplayer"
+	mp_button.add_theme_font_size_override("font_size", 24)
+	mp_button.pressed.connect(_on_multiplayer_pressed)
+	mp_button.mouse_entered.connect(_on_button_hover.bind(mp_button))
+	$MenuContainer.add_child(mp_button)
+	$MenuContainer.move_child(mp_button, 2)  # After Play and Events
 
 func _process(_delta):
 	if Input.mouse_mode != Input.MOUSE_MODE_VISIBLE:
@@ -271,6 +279,9 @@ func _on_event_selected(event_scene_path: String):
 
 func _on_map_selected(scene_path: String):
 	get_tree().change_scene_to_file(scene_path)
+
+func _on_multiplayer_pressed():
+	get_tree().change_scene_to_file("res://multiplayer/multiplayer_menu.tscn")
 
 func _on_quit_pressed():
 	get_tree().quit()
