@@ -134,14 +134,26 @@ func _on_join_pressed():
 		host_btn.disabled = false
 		join_btn.disabled = false
 		return
-	# Wait briefly for connection, then go to lobby
-	await get_tree().create_timer(1.0).timeout
-	if NetworkManager.multiplayer.multiplayer_peer != null:
-		get_tree().change_scene_to_file("res://multiplayer/lobby.tscn")
-	else:
-		status_label.text = "Connection failed"
-		host_btn.disabled = false
-		join_btn.disabled = false
+	# Wait for connection — host will send us to lobby or match
+	for i in 5:
+		await get_tree().create_timer(1.0).timeout
+		if not is_instance_valid(self):
+			return  # Host already sent us to a scene
+		if NetworkManager.multiplayer.multiplayer_peer == null:
+			status_label.text = "Connection failed"
+			host_btn.disabled = false
+			join_btn.disabled = false
+			return
+		if NetworkManager.players.size() > 1:
+			# Connected and registered — go to lobby if host hasn't moved us
+			get_tree().change_scene_to_file("res://multiplayer/lobby.tscn")
+			return
+		status_label.text = "Connecting to %s... (%ds)" % [ip, i + 1]
+	# Timed out
+	status_label.text = "Connection timed out"
+	NetworkManager.disconnect_from_game()
+	host_btn.disabled = false
+	join_btn.disabled = false
 
 func _on_connection_failed():
 	status_label.text = "Connection failed"

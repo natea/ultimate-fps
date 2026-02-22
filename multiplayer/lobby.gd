@@ -6,6 +6,7 @@ var kill_limit_spin: SpinBox
 var time_limit_spin: SpinBox
 var start_btn: Button
 var status_label: Label
+var notification_label: Label
 
 var mp_maps := [
 	{"name": "Arena", "scene": "res://levels/arena.tscn"},
@@ -65,6 +66,13 @@ func _build_ui():
 
 	# Settings (host only)
 	if NetworkManager.is_host():
+		# Show host IP so others can connect
+		var ip_label = Label.new()
+		ip_label.text = "Your IP: %s" % _get_local_ip()
+		ip_label.add_theme_font_size_override("font_size", 18)
+		ip_label.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
+		main_container.add_child(ip_label)
+
 		var settings_label = Label.new()
 		settings_label.text = "Match Settings:"
 		settings_label.add_theme_font_size_override("font_size", 22)
@@ -128,6 +136,14 @@ func _build_ui():
 		status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		main_container.add_child(status_label)
 
+	# Notification label (player join/leave)
+	notification_label = Label.new()
+	notification_label.text = ""
+	notification_label.add_theme_font_size_override("font_size", 16)
+	notification_label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.5))
+	notification_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	main_container.add_child(notification_label)
+
 	# Leave button
 	var leave_btn = Button.new()
 	leave_btn.text = "Leave"
@@ -150,9 +166,20 @@ func _refresh_player_list():
 
 func _on_player_connected(_peer_id: int, _info: Dictionary):
 	_refresh_player_list()
+	_show_notification("%s joined" % _info.get("name", "Player"))
 
 func _on_player_disconnected(_peer_id: int):
 	_refresh_player_list()
+	_show_notification("A player left")
+
+func _show_notification(text: String):
+	if notification_label:
+		notification_label.text = text
+		# Clear after 3 seconds
+		get_tree().create_timer(3.0).timeout.connect(func():
+			if is_instance_valid(notification_label) and notification_label.text == text:
+				notification_label.text = ""
+		)
 
 func _on_server_disconnected():
 	NetworkManager.disconnect_from_game()
@@ -165,6 +192,13 @@ func _on_start_pressed():
 	NetworkManager.match_kill_limit = int(kill_limit_spin.value)
 	NetworkManager.match_time_limit = time_limit_spin.value * 60.0
 	NetworkManager.start_match()
+
+func _get_local_ip() -> String:
+	for addr in IP.get_local_addresses():
+		if addr.begins_with("127.") or ":" in addr:
+			continue
+		return addr
+	return "unknown"
 
 func _apply_button_style(btn: Control):
 	btn.add_theme_stylebox_override("normal", _make_style(Color(0.18, 0.18, 0.25, 1)))
