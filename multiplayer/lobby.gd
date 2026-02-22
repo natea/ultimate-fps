@@ -80,6 +80,7 @@ func _build_ui():
 		for map_info in mp_maps:
 			map_selector.add_item(map_info.name)
 		map_selector.add_theme_font_size_override("font_size", 18)
+		_apply_button_style(map_selector)
 		map_row.add_child(map_selector)
 		main_container.add_child(map_row)
 
@@ -94,6 +95,7 @@ func _build_ui():
 		kill_limit_spin.max_value = 50
 		kill_limit_spin.value = 20
 		kill_limit_spin.step = 5
+		_style_spinbox(kill_limit_spin)
 		kill_row.add_child(kill_limit_spin)
 		main_container.add_child(kill_row)
 
@@ -108,6 +110,7 @@ func _build_ui():
 		time_limit_spin.max_value = 30
 		time_limit_spin.value = 10
 		time_limit_spin.step = 1
+		_style_spinbox(time_limit_spin)
 		time_row.add_child(time_limit_spin)
 		main_container.add_child(time_row)
 
@@ -115,6 +118,7 @@ func _build_ui():
 		start_btn = Button.new()
 		start_btn.text = "Start Match"
 		start_btn.add_theme_font_size_override("font_size", 24)
+		_apply_button_style(start_btn)
 		start_btn.pressed.connect(_on_start_pressed)
 		main_container.add_child(start_btn)
 	else:
@@ -128,6 +132,7 @@ func _build_ui():
 	var leave_btn = Button.new()
 	leave_btn.text = "Leave"
 	leave_btn.add_theme_font_size_override("font_size", 18)
+	_apply_button_style(leave_btn)
 	leave_btn.pressed.connect(_on_leave_pressed)
 	main_container.add_child(leave_btn)
 
@@ -160,6 +165,43 @@ func _on_start_pressed():
 	NetworkManager.match_kill_limit = int(kill_limit_spin.value)
 	NetworkManager.match_time_limit = time_limit_spin.value * 60.0
 	NetworkManager.start_match()
+
+func _apply_button_style(btn: Control):
+	btn.add_theme_stylebox_override("normal", _make_style(Color(0.18, 0.18, 0.25, 1)))
+	btn.add_theme_stylebox_override("hover", _make_style(Color(0.3, 0.3, 0.45, 1)))
+	btn.add_theme_stylebox_override("pressed", _make_style(Color(0.15, 0.15, 0.2, 1)))
+
+func _style_spinbox(spin: SpinBox):
+	var line_edit = spin.get_line_edit()
+	var input_style = StyleBoxFlat.new()
+	input_style.bg_color = Color(0.18, 0.18, 0.25, 1)
+	input_style.border_color = Color(0.35, 0.35, 0.45, 1)
+	input_style.border_width_bottom = 2
+	input_style.border_width_top = 2
+	input_style.border_width_left = 2
+	input_style.border_width_right = 2
+	input_style.corner_radius_top_left = 4
+	input_style.corner_radius_top_right = 4
+	input_style.corner_radius_bottom_right = 4
+	input_style.corner_radius_bottom_left = 4
+	input_style.content_margin_left = 10.0
+	input_style.content_margin_top = 6.0
+	input_style.content_margin_right = 10.0
+	input_style.content_margin_bottom = 6.0
+	line_edit.add_theme_stylebox_override("normal", input_style)
+
+func _make_style(color: Color) -> StyleBoxFlat:
+	var style = StyleBoxFlat.new()
+	style.bg_color = color
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	style.corner_radius_bottom_right = 6
+	style.corner_radius_bottom_left = 6
+	style.content_margin_left = 20.0
+	style.content_margin_top = 12.0
+	style.content_margin_right = 20.0
+	style.content_margin_bottom = 12.0
+	return style
 
 func _on_leave_pressed():
 	NetworkManager.disconnect_from_game()
