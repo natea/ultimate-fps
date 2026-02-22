@@ -58,6 +58,10 @@ func _ready():
 		get_tree().change_scene_to_file("res://ui/main_menu.tscn")
 	)
 
+	# Handle late joiners — spawn them when they connect mid-match
+	if NetworkManager.is_host():
+		NetworkManager.player_connected.connect(_on_late_joiner)
+
 	# Wait for all players to load, then spawn everyone
 	if NetworkManager.is_host():
 		if NetworkManager._players_loaded >= NetworkManager._expected_players:
@@ -123,6 +127,26 @@ func _spawn_player(peer_id: int, pos: Vector3):
 		var cam = player.get_node_or_null("Head/Camera")
 		if cam:
 			cam.make_current()
+
+func _on_late_joiner(peer_id: int, _info: Dictionary):
+	# Only host spawns late joiners, and only after initial spawn_all_players ran
+	if not NetworkManager.is_host():
+		return
+	if player_nodes.has(peer_id):
+		return  # Already spawned
+	print("[Deathmatch] Late joiner %d — waiting for them to load scene" % peer_id)
+	# Wait for the late joiner's DeathmatchController to be ready
+	# They send _notify_loaded when ready, but we can just use a delay
+	await get_tree().create_timer(3.0).timeout
+	if not is_instance_valid(self):
+		return
+	if player_nodes.has(peer_id):
+		return  # Spawned by something else in the meantime
+	if not NetworkManager.players.has(peer_id):
+		return  # They already disconnected
+	var pos = get_random_spawn_position()
+	print("[Deathmatch] Spawning late joiner %d" % peer_id)
+	_spawn_player.rpc(peer_id, pos)
 
 func remove_player(peer_id: int):
 	if player_nodes.has(peer_id):
