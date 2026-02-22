@@ -7,9 +7,12 @@ var host_btn: Button
 var join_btn: Button
 var back_btn: Button
 
+const SETTINGS_PATH := "user://multiplayer_settings.cfg"
+
 func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_build_ui()
+	_load_settings()
 	NetworkManager.connection_failed.connect(_on_connection_failed)
 
 func _process(_delta):
@@ -70,6 +73,13 @@ func _build_ui():
 	ip_input.add_theme_stylebox_override("normal", _make_input_style())
 	container.add_child(ip_input)
 
+	# Show local IP for subnet verification
+	var my_ip_label = Label.new()
+	my_ip_label.text = "Your IP: %s" % _get_local_ip()
+	my_ip_label.add_theme_font_size_override("font_size", 14)
+	my_ip_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+	container.add_child(my_ip_label)
+
 	# Buttons
 	var btn_container = HBoxContainer.new()
 	btn_container.add_theme_constant_override("separation", 12)
@@ -110,6 +120,7 @@ func _on_host_pressed():
 	var pname = name_input.text.strip_edges()
 	if pname == "":
 		pname = "Host"
+	_save_settings()
 	status_label.text = "Starting server..."
 	var err = NetworkManager.host_game(pname)
 	if err != OK:
@@ -125,37 +136,55 @@ func _on_join_pressed():
 	if ip == "":
 		status_label.text = "Enter a server IP address"
 		return
+	_save_settings()
+	print("[Client] Attempting to join %s as '%s'" % [ip, pname])
 	status_label.text = "Connecting to %s..." % ip
 	host_btn.disabled = true
 	join_btn.disabled = true
 	var err = NetworkManager.join_game(ip, pname)
 	if err != OK:
+		print("[Client] join_game returned error %d" % err)
 		status_label.text = "Failed to connect (error %d)" % err
 		host_btn.disabled = false
 		join_btn.disabled = false
 		return
-	# Wait for connection — host will send us to lobby or match
-	for i in 5:
+	print("[Client] join_game call succeeded, waiting for connection...")
+	# Wait for ENet to connect (peer_state 2), then go to lobby
+	for i in 10:
 		await get_tree().create_timer(1.0).timeout
 		if not is_instance_valid(self):
+			print("[Client] Scene changed (host moved us), exiting join loop")
 			return  # Host already sent us to a scene
-		if NetworkManager.multiplayer.multiplayer_peer == null:
+		var peer = NetworkManager.multiplayer.multiplayer_peer
+		if peer == null:
+			print("[Client] Peer is null — connection lost")
 			status_label.text = "Connection failed"
 			host_btn.disabled = false
 			join_btn.disabled = false
 			return
-		if NetworkManager.players.size() > 1:
-			# Connected and registered — go to lobby if host hasn't moved us
+		var peer_state = peer.get_connection_status()
+		var player_count = NetworkManager.players.size()
+		print("[Client] Tick %d: peer_state=%d, players=%d" % [i + 1, peer_state, player_count])
+		if peer_state == MultiplayerPeer.CONNECTION_CONNECTED:
+			print("[Client] ENet connected — navigating to lobby")
 			get_tree().change_scene_to_file("res://multiplayer/lobby.tscn")
+			return
+		if peer_state == MultiplayerPeer.CONNECTION_DISCONNECTED:
+			print("[Client] ENet disconnected")
+			status_label.text = "Connection failed"
+			host_btn.disabled = false
+			join_btn.disabled = false
 			return
 		status_label.text = "Connecting to %s... (%ds)" % [ip, i + 1]
 	# Timed out
+	print("[Client] Connection timed out after 10 seconds")
 	status_label.text = "Connection timed out"
 	NetworkManager.disconnect_from_game()
 	host_btn.disabled = false
 	join_btn.disabled = false
 
 func _on_connection_failed():
+	print("[Client] Connection failed signal received")
 	status_label.text = "Connection failed"
 	host_btn.disabled = false
 	join_btn.disabled = false
@@ -195,6 +224,35 @@ func _make_input_style() -> StyleBoxFlat:
 	style.content_margin_right = 10.0
 	style.content_margin_bottom = 8.0
 	return style
+
+func _get_local_ip() -> String:
+	var vm_prefixes = ["100.", "192.168.64.", "192.168.99.", "10.211.55.", "10.37.129.", "172.16.", "198.18."]
+	var fallback := ""
+	for addr in IP.get_local_addresses():
+		if addr.begins_with("127.") or ":" in addr:
+			continue
+		var is_vm = false
+		for prefix in vm_prefixes:
+			if addr.begins_with(prefix):
+				is_vm = true
+				break
+		if not is_vm:
+			return addr
+		if fallback == "":
+			fallback = addr
+	return fallback if fallback != "" else "unknown"
+
+func _load_settings():
+	var cfg = ConfigFile.new()
+	if cfg.load(SETTINGS_PATH) == OK:
+		ip_input.text = cfg.get_value("multiplayer", "last_ip", "127.0.0.1")
+		name_input.text = cfg.get_value("multiplayer", "player_name", "Player")
+
+func _save_settings():
+	var cfg = ConfigFile.new()
+	cfg.set_value("multiplayer", "last_ip", ip_input.text.strip_edges())
+	cfg.set_value("multiplayer", "player_name", name_input.text.strip_edges())
+	cfg.save(SETTINGS_PATH)
 
 func _on_back_pressed():
 	NetworkManager.disconnect_from_game()

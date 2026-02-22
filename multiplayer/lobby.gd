@@ -66,11 +66,18 @@ func _build_ui():
 
 	# Settings (host only)
 	if NetworkManager.is_host():
-		# Show host IP so others can connect
+		# Show host IPs so others can connect
+		var ips = _get_local_ips()
 		var ip_label = Label.new()
-		ip_label.text = "Your IP: %s" % _get_local_ip()
+		if ips.size() == 1:
+			ip_label.text = "Your IP: %s" % ips[0]
+		elif ips.size() > 1:
+			ip_label.text = "Your IPs: %s" % ", ".join(ips)
+		else:
+			ip_label.text = "Your IP: unknown"
 		ip_label.add_theme_font_size_override("font_size", 18)
 		ip_label.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
+		ip_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 		main_container.add_child(ip_label)
 
 		var settings_label = Label.new()
@@ -193,12 +200,26 @@ func _on_start_pressed():
 	NetworkManager.match_time_limit = time_limit_spin.value * 60.0
 	NetworkManager.start_match()
 
-func _get_local_ip() -> String:
+func _get_local_ips() -> Array[String]:
+	var ips: Array[String] = []
+	# Known VM/VPN/virtual interface subnets to deprioritize
+	var vm_prefixes = ["100.", "192.168.64.", "192.168.99.", "10.211.55.", "10.37.129.", "172.16.", "198.18."]
+	var vm_ips: Array[String] = []
 	for addr in IP.get_local_addresses():
 		if addr.begins_with("127.") or ":" in addr:
 			continue
-		return addr
-	return "unknown"
+		var is_vm = false
+		for prefix in vm_prefixes:
+			if addr.begins_with(prefix):
+				is_vm = true
+				break
+		if is_vm:
+			vm_ips.append(addr)
+		else:
+			ips.append(addr)
+	# Show real IPs first, then VM IPs as fallback
+	ips.append_array(vm_ips)
+	return ips
 
 func _apply_button_style(btn: Control):
 	btn.add_theme_stylebox_override("normal", _make_style(Color(0.18, 0.18, 0.25, 1)))

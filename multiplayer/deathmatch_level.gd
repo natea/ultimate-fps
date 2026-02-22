@@ -60,9 +60,20 @@ func _ready():
 
 	# Wait for all players to load, then spawn everyone
 	if NetworkManager.is_host():
-		# If all already loaded (small player count), spawn immediately
-		await get_tree().create_timer(0.5).timeout
-		spawn_all_players()
+		if NetworkManager._players_loaded >= NetworkManager._expected_players:
+			# All players already reported loaded
+			spawn_all_players()
+		else:
+			# Wait for all players to load (with timeout fallback)
+			var loaded = false
+			NetworkManager.all_players_loaded.connect(func():
+				loaded = true
+			, CONNECT_ONE_SHOT)
+			for i in 10:
+				await get_tree().create_timer(1.0).timeout
+				if loaded:
+					break
+			spawn_all_players()
 
 func spawn_all_players():
 	var peer_ids = NetworkManager.players.keys()
