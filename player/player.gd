@@ -121,8 +121,9 @@ var tp_current_anim := ""
 var scope_overlay: CanvasLayer = null
 
 func _ready():
+	add_to_group("player")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	
+
 	# Find scope overlay in scene
 	scope_overlay = get_tree().get_first_node_in_group("scope_overlay")
 	
@@ -140,6 +141,22 @@ func _ready():
 	if weapons.size() > 0:
 		weapon = weapons[weapon_index]
 		equip_weapon(weapon_index)
+
+	# Multiplayer: disable input/camera for non-local players
+	if multiplayer.has_multiplayer_peer() and not is_multiplayer_authority():
+		set_process_input(false)
+		set_process_unhandled_input(false)
+		camera.current = false
+		third_person_camera.current = false
+		# Force third-person model visible for remote players
+		call_deferred("_setup_remote_player")
+
+func _setup_remote_player():
+	if tp_model:
+		tp_model.visible = true
+	if fps_arms:
+		fps_arms.visible = false
+	weapon_container.visible = false
 
 func _setup_fps_arms():
 	# Instantiate the SWAT model from script
@@ -277,6 +294,10 @@ func _notification(what):
 		mouse_captured = true
 
 func _physics_process(delta):
+	if multiplayer.has_multiplayer_peer() and not is_multiplayer_authority():
+		# Remote player: just apply synced position (handled by MultiplayerSynchronizer)
+		return
+
 	# Keep mouse captured during gameplay
 	if mouse_captured and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -405,6 +426,8 @@ func _physics_process(delta):
 		get_tree().reload_current_scene()
 
 func _input(event):
+	if multiplayer.has_multiplayer_peer() and not is_multiplayer_authority():
+		return
 	if event is InputEventMouseMotion and mouse_captured:
 		input_mouse = event.relative / mouse_sensitivity
 		handle_rotation(event.relative.x, event.relative.y, false)
@@ -591,6 +614,13 @@ func shoot():
 	if weapon_container:
 		weapon_container.position.z += 0.05
 	
+	# Multiplayer: send shot to server for validation
+	if is_in_multiplayer():
+		var shot_origin = camera.global_position
+		var shot_dir = -camera.global_basis.z
+		request_shot_server.rpc_id(1, shot_origin, shot_dir, weapon_index)
+		return  # Server handles hit detection
+
 	# Rocket launcher fires a projectile instead of raycast
 	if weapon.weapon_name == "Strela-P":
 		fire_rocket()
@@ -866,6 +896,10 @@ func take_damage(amount: float):
 
 func die():
 	stop_gun_sound()
+	if is_in_multiplayer():
+		# In multiplayer, death is handled by match_manager
+		# Just disable input during death
+		return
 	get_tree().reload_current_scene()
 
 # Weapon inspect functions
@@ -1044,3 +1078,57 @@ func _strip_root_motion(anim: Animation):
 			# Zero all movement, use constant height
 			for k in key_count:
 				anim.track_set_key_value(i, k, Vector3(0, avg_y, 0))
+
+# --- Multiplayer RPCs ---
+
+func is_in_multiplayer() -> bool:
+	return multiplayer.has_multiplayer_peer() and multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED
+
+@rpc("any_peer", "reliable")
+func request_shot_server(origin: Vector3, direction: Vector3, weapon_idx: int):
+	# Server-side shot validation
+	if not multiplayer.is_server():
+		return
+	var shooter_id = multiplayer.get_remote_sender_id()
+	var w = weapons[weapon_idx] if weapon_idx < weapons.size() else null
+	if w == null:
+		return
+
+	var space_state = get_world_3d().direct_space_state
+	for _i in w.shot_count:
+		var spread_dir = direction
+		spread_dir.x += randf_range(-w.spread, w.spread) * 0.01
+		spread_dir.y += randf_range(-w.spread, w.spread) * 0.01
+		spread_dir = spread_dir.normalized()
+
+		var query = PhysicsRayQueryParameters3D.create(origin, origin + spread_dir * w.max_distance)
+		query.exclude = [get_rid()]
+		var result = space_state.intersect_ray(query)
+		if result:
+			var collider = result.collider
+			# Check if we hit another player
+			if collider is CharacterBody3D and collider.has_method("take_damage") and collider != self:
+				var victim_id = collider.get_meta("peer_id", -1)
+				if victim_id > 0:
+					collider.take_damage(w.damage)
+					_broadcast_hit.rpc(victim_id, w.damage, result.position, result.normal)
+					if collider.health <= 0:
+						_broadcast_kill.rpc(shooter_id, victim_id)
+			else:
+				# Hit world geometry
+				_broadcast_impact.rpc(result.position, result.normal)
+
+@rpc("authority", "call_local", "reliable")
+func _broadcast_hit(victim_id: int, damage: float, hit_pos: Vector3, hit_normal: Vector3):
+	spawn_impact(hit_pos, hit_normal)
+
+@rpc("authority", "call_local", "reliable")
+func _broadcast_impact(hit_pos: Vector3, hit_normal: Vector3):
+	spawn_impact(hit_pos, hit_normal)
+
+@rpc("authority", "call_local", "reliable")
+func _broadcast_kill(killer_id: int, victim_id: int):
+	# MatchManager will handle scoring
+	var match_mgr = get_tree().get_first_node_in_group("match_manager")
+	if match_mgr and match_mgr.has_method("on_player_killed"):
+		match_mgr.on_player_killed(killer_id, victim_id)
