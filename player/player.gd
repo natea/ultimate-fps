@@ -69,6 +69,27 @@ var grenade_throw_force := 20.0
 
 var fall_death_y: float = -10.0  # Y threshold for void death, set very low to disable
 
+# Wall climb
+var is_climbing := false
+var climb_phase := 0  # 0=rising, 1=hanging (wait for space), 2=vaulting
+var climb_time := 0.0
+var climb_rise_duration := 0.5
+var climb_vault_duration := 0.5
+var climb_start_pos := Vector3.ZERO
+var climb_hang_pos := Vector3.ZERO
+var climb_end_pos := Vector3.ZERO
+var climb_wall_normal := Vector3.ZERO
+var tp_climb_anim_name := ""
+var tp_ledge_anim_name := ""
+var wall_press_time := 0.0
+const WALL_CLIMB_HEIGHT := 15.0
+
+# Emotes
+var is_emoting := false
+var emote_anim_names := {}
+var emote_wheel_open := false
+var emote_wheel_node: CanvasLayer = null
+
 var health: float = 100.0
 var max_health: float = 100.0
 var stamina: float = 100.0
@@ -126,6 +147,9 @@ func _ready():
 
 	# Find scope overlay in scene
 	scope_overlay = get_tree().get_first_node_in_group("scope_overlay")
+
+	# Find emote wheel (deferred so it has time to join its group)
+	call_deferred("_connect_emote_wheel")
 	
 	# Setup FPS arms - hide legs and lower body
 	call_deferred("_setup_fps_arms")
@@ -261,6 +285,20 @@ func _setup_tp_model():
 	if tp_anim_player:
 		tp_crouch_anim_name = _load_tp_anim("res://animations/Crouch Walking.fbx", "tp_crouch", true)
 		tp_reload_anim_name = _load_tp_anim("res://animations/Reloading.fbx", "tp_reload", false)
+		tp_climb_anim_name = _load_tp_anim("res://animations/Climbing Up Wall.fbx", "tp_climb", true)
+		tp_ledge_anim_name = _load_tp_anim("res://animations/Climbing Ledge.fbx", "tp_ledge", false)
+
+		# Load emote animations
+		var emote_files = {
+			"hip_hop": "res://animations/emotes/Hip Hop Dancing.fbx",
+			"hip_hop_2": "res://animations/emotes/Hip Hop Dancing 2.fbx",
+			"macarena": "res://animations/emotes/Macarena Dance.fbx",
+			"breakdance": "res://animations/emotes/Breakdance.fbx"
+		}
+		for emote_id in emote_files:
+			var anim_name = _load_tp_anim(emote_files[emote_id], "emote_" + emote_id, true)
+			if anim_name != "":
+				emote_anim_names[emote_id] = anim_name
 
 	print("Third-person model setup complete")
 
@@ -298,9 +336,34 @@ func _physics_process(delta):
 		# Remote player: just apply synced position (handled by MultiplayerSynchronizer)
 		return
 
-	# Keep mouse captured during gameplay
-	if mouse_captured and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+	# Keep mouse captured during gameplay (but not during emote wheel)
+	if mouse_captured and not emote_wheel_open and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+	# Emote wheel toggle
+	if Input.is_action_just_pressed("emote_wheel"):
+		if not is_climbing and not is_reloading:
+			if emote_wheel_open:
+				_close_emote_wheel()
+			else:
+				_open_emote_wheel()
+
+	# Cancel emote on movement input
+	if is_emoting and not emote_wheel_open:
+		var move_input = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+		if move_input.length() > 0.3 or Input.is_action_just_pressed("jump"):
+			_stop_emote()
+
+	# Skip movement while emote wheel is open
+	if emote_wheel_open:
+		return
+
+	# Wall climb: skip normal movement during climb
+	if is_climbing:
+		_update_climb(delta)
+		head.position.y = lerp(head.position.y, stand_head_y, delta * 10.0)
+		previously_floored = false
+		return
 
 	handle_controls(delta)
 	handle_gravity(delta)
@@ -338,7 +401,18 @@ func _physics_process(delta):
 			move_and_slide()
 	else:
 		move_and_slide()
-	
+
+	# Wall climb detection: pressing into a wall for 0.1s triggers climb
+	var pressing_forward = Input.get_vector("move_left", "move_right", "move_forward", "move_back").y < -0.5
+	if is_on_wall() and pressing_forward and not is_climbing:
+		wall_press_time += delta
+		if wall_press_time >= 0.1:
+			wall_press_time = 0.0
+			_start_wall_climb(get_wall_normal())
+			return
+	else:
+		wall_press_time = 0.0
+
 	# Weapon sway and ADS
 	if weapon_container:
 		var target_pos: Vector3
@@ -376,8 +450,8 @@ func _physics_process(delta):
 		capsule.height = lerp(capsule.height, target_col_height, delta * 10.0)
 		collision_shape.position.y = capsule.height / 2.0
 
-	# Footstep sounds
-	if is_on_floor() and velocity.length() > 1.0:
+	# Footstep sounds (use was_on_floor since step-up lifts player mid-frame)
+	if was_on_floor and velocity.length() > 1.0:
 		var step_interval = 0.55 if is_crouching else (0.35 if Input.is_action_pressed("sprint") else 0.45)
 		footstep_timer -= delta
 		if footstep_timer <= 0.0:
@@ -388,8 +462,8 @@ func _physics_process(delta):
 	else:
 		footstep_timer = 0.0
 
-	# Third-person model animation (skip if reload is playing)
-	if is_third_person and tp_model and tp_anim_player and tp_anim_name != "" and tp_current_anim != tp_reload_anim_name:
+	# Third-person model animation (skip if reload, climb, or emote is playing)
+	if is_third_person and tp_model and tp_anim_player and tp_anim_name != "" and tp_current_anim != tp_reload_anim_name and not is_climbing and not is_emoting:
 		var is_moving = velocity.length() > 1.0
 		var target_anim := ""
 
@@ -397,7 +471,7 @@ func _physics_process(delta):
 			target_anim = tp_crouch_anim_name
 		elif is_crouching and not is_moving:
 			target_anim = "crouch_idle"
-		elif is_moving and is_on_floor():
+		elif is_moving and was_on_floor:
 			target_anim = tp_anim_name
 		else:
 			target_anim = "idle"
@@ -890,7 +964,16 @@ func take_damage(amount: float):
 	health -= amount
 	health = max(0, health)
 	health_updated.emit(health, max_health)
-	
+
+	if is_climbing:
+		_end_climb()
+		gravity = 2.0
+
+	if is_emoting:
+		_stop_emote()
+	if emote_wheel_open:
+		_close_emote_wheel()
+
 	if health <= 0:
 		die()
 
@@ -1132,3 +1215,217 @@ func _broadcast_kill(killer_id: int, victim_id: int):
 	var match_mgr = get_tree().get_first_node_in_group("match_manager")
 	if match_mgr and match_mgr.has_method("on_player_killed"):
 		match_mgr.on_player_killed(killer_id, victim_id)
+
+func _start_wall_climb(wall_normal: Vector3):
+	var space = get_world_3d().direct_space_state
+
+	# Find wall top by casting horizontal rays at increasing heights
+	# When a ray stops hitting the wall, we've found the top
+	var wall_top_y := -1.0
+	var found_top := false
+	var wall_hit_pos := Vector3.ZERO
+	for i in range(4, int(WALL_CLIMB_HEIGHT / 0.25) + 1):
+		var test_y = global_position.y + i * 0.25
+		var ray_start = Vector3(global_position.x, test_y, global_position.z)
+		var ray_end = ray_start - wall_normal * 1.5
+		var h_query = PhysicsRayQueryParameters3D.create(ray_start, ray_end)
+		h_query.exclude = [get_rid()]
+		var h_result = space.intersect_ray(h_query)
+		if h_result:
+			wall_top_y = test_y
+			wall_hit_pos = h_result.position
+		elif wall_top_y > 0:
+			found_top = true
+			break
+
+	if not found_top or wall_top_y < 0:
+		print("CLIMB: no top found, found_top=", found_top, " wall_top_y=", wall_top_y)
+		return
+
+	# Minimum height: only climb tall walls (buildings), not small objects
+	var climb_height = wall_top_y - global_position.y
+	if climb_height < 1.5:
+		print("CLIMB: too short, height=", climb_height)
+		return
+
+	# Ceiling check: only up to the wall top, not the full scan range
+	var ceil_query = PhysicsRayQueryParameters3D.create(
+		global_position + Vector3(0, 1.0, 0),
+		global_position + Vector3(0, climb_height + 0.5, 0))
+	ceil_query.exclude = [get_rid()]
+	var ceil_result = space.intersect_ray(ceil_query)
+	if ceil_result:
+		print("CLIMB: ceiling at ", ceil_result.position, " blocking climb_height=", climb_height)
+		return
+
+	print("CLIMB: starting! wall_top_y=", wall_top_y, " height=", climb_height)
+
+	# Now find the actual roof surface by casting a ray downward from above,
+	# past the wall, to find what we'll land on
+	var above_wall = Vector3(wall_hit_pos.x, wall_top_y + 2.0, wall_hit_pos.z) - wall_normal * 1.5
+	var down_query = PhysicsRayQueryParameters3D.create(above_wall, above_wall - Vector3(0, 4.0, 0))
+	down_query.exclude = [get_rid()]
+	var down_result = space.intersect_ray(down_query)
+
+	var landing_y := wall_top_y + 0.5  # Fallback
+	var landing_xz := wall_hit_pos - wall_normal * 1.5  # 1.5m past wall surface
+	if down_result:
+		landing_y = down_result.position.y + 0.1  # Just above the surface
+		landing_xz = Vector3(down_result.position.x, 0, down_result.position.z)
+
+	is_climbing = true
+	climb_phase = 0
+	climb_time = 0.0
+	climb_start_pos = global_position
+	climb_wall_normal = wall_normal
+	velocity = Vector3.ZERO
+	gravity = 0.0
+	jumps_remaining = 0
+	is_crouching = false
+
+	# Scale rise duration to wall height
+	climb_rise_duration = clamp(climb_height * 0.2, 0.3, 1.0)
+
+	# Hang position: hands at ledge, body below, staying on player's side
+	climb_hang_pos = global_position
+	climb_hang_pos.y = wall_top_y - 0.3
+
+	# End position: on the roof surface, found by downward raycast
+	climb_end_pos = Vector3(landing_xz.x, landing_y, landing_xz.z)
+
+	# Cancel reload
+	if is_reloading:
+		is_reloading = false
+		reload_timer.stop()
+
+	# Hide weapon in first person
+	if not is_third_person:
+		weapon_container.visible = false
+
+	# Play climbing up wall animation (looping) in third person
+	if is_third_person and tp_anim_player and tp_climb_anim_name != "":
+		tp_anim_player.speed_scale = 1.0
+		tp_anim_player.play(tp_climb_anim_name)
+		tp_current_anim = tp_climb_anim_name
+
+func _update_climb(delta: float):
+	climb_time += delta
+
+	if climb_phase == 0:
+		# Phase 0: rise up along the wall (no forward movement — stays on player's side)
+		var t = clamp(climb_time / climb_rise_duration, 0.0, 1.0)
+		var eased = t * t * (3.0 - 2.0 * t)
+		global_position = climb_start_pos.lerp(climb_hang_pos, eased)
+
+		if not is_third_person:
+			camera.rotation.x = lerp(0.0, deg_to_rad(-5.0), eased)
+
+		if t >= 1.0:
+			climb_phase = 1
+			global_position = climb_hang_pos
+			# Stop the climbing loop, freeze in place
+			if tp_anim_player:
+				tp_anim_player.speed_scale = 0.0
+
+	elif climb_phase == 1:
+		# Phase 1: hanging at the top — press space to vault over
+		global_position = climb_hang_pos
+		if Input.is_action_just_pressed("jump"):
+			climb_phase = 2
+			climb_time = 0.0
+			# Play ledge climb animation in third person
+			if is_third_person and tp_anim_player and tp_ledge_anim_name != "":
+				tp_anim_player.speed_scale = 1.0
+				tp_anim_player.play(tp_ledge_anim_name)
+				var anim = tp_anim_player.get_animation(tp_ledge_anim_name)
+				if anim:
+					tp_anim_player.speed_scale = anim.length / climb_vault_duration
+				tp_current_anim = tp_ledge_anim_name
+
+	elif climb_phase == 2:
+		# Phase 2: vault over the top onto the wall
+		var t = clamp(climb_time / climb_vault_duration, 0.0, 1.0)
+		var eased = t * t * (3.0 - 2.0 * t)
+		global_position = climb_hang_pos.lerp(climb_end_pos, eased)
+
+		if not is_third_person:
+			camera.rotation.x = lerp(deg_to_rad(-5.0), 0.0, eased)
+
+		if t >= 1.0:
+			_end_climb()
+
+func _end_climb():
+	is_climbing = false
+	climb_phase = 0
+	climb_time = 0.0
+	global_position = climb_end_pos
+	gravity = 0.0
+	velocity = Vector3.ZERO
+	jumps_remaining = max_jumps
+
+	# Snap to ground: cast downward to find the surface we're standing on
+	var space = get_world_3d().direct_space_state
+	var snap_query = PhysicsRayQueryParameters3D.create(
+		global_position + Vector3(0, 0.5, 0),
+		global_position - Vector3(0, 2.0, 0))
+	snap_query.exclude = [get_rid()]
+	var snap_result = space.intersect_ray(snap_query)
+	if snap_result:
+		global_position.y = snap_result.position.y + 0.1
+
+	if not is_third_person:
+		weapon_container.visible = true
+		camera.rotation.x = 0.0
+
+	if tp_anim_player:
+		tp_anim_player.speed_scale = 1.0
+		tp_current_anim = ""
+
+	camera.position.y = -0.1
+
+# ── Emote system ──
+
+func _open_emote_wheel():
+	if emote_wheel_node:
+		emote_wheel_open = true
+		emote_wheel_node.show_wheel()
+		velocity = Vector3.ZERO
+
+func _connect_emote_wheel():
+	emote_wheel_node = get_tree().get_first_node_in_group("emote_wheel")
+	if emote_wheel_node:
+		emote_wheel_node.emote_selected.connect(_on_emote_selected)
+
+func _close_emote_wheel():
+	if emote_wheel_node:
+		emote_wheel_open = false
+		emote_wheel_node.hide_wheel()
+
+func _on_emote_selected(emote_id: String):
+	emote_wheel_open = false
+	if emote_id in emote_anim_names:
+		_start_emote(emote_id)
+
+func _start_emote(emote_id: String):
+	is_emoting = true
+	velocity = Vector3.ZERO
+
+	# Hide weapon in first person
+	if not is_third_person:
+		weapon_container.visible = false
+
+	# Play emote animation in third person
+	if tp_anim_player and emote_id in emote_anim_names:
+		tp_anim_player.speed_scale = 1.0
+		tp_anim_player.play(emote_anim_names[emote_id])
+		tp_current_anim = emote_anim_names[emote_id]
+
+func _stop_emote():
+	is_emoting = false
+
+	if not is_third_person:
+		weapon_container.visible = true
+
+	if tp_anim_player:
+		tp_anim_player.speed_scale = 1.0
+		tp_current_anim = ""
