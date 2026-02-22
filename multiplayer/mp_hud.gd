@@ -23,6 +23,8 @@ func _ready():
 		match_manager.match_started.connect(_on_match_started)
 		match_manager.match_ended.connect(_on_match_ended)
 		match_manager.countdown_tick.connect(_on_countdown_tick)
+	NetworkManager.player_connected.connect(_on_mp_player_joined)
+	NetworkManager.player_disconnected.connect(_on_mp_player_left)
 
 func _process(_delta):
 	# Update timer
@@ -193,6 +195,12 @@ func _refresh_scoreboard():
 		if peer_id == multiplayer.get_unique_id():
 			label.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
 		scoreboard_list.add_child(label)
+
+func _on_mp_player_joined(_peer_id: int, info: Dictionary):
+	_add_kill_feed_entry(">> %s joined the match" % info.get("name", "Player"))
+
+func _on_mp_player_left(_peer_id: int):
+	_add_kill_feed_entry(">> A player left the match")
 
 func _add_kill_feed_entry(text: String):
 	var label = Label.new()
