@@ -1,4 +1,4 @@
-[gd_scene load_steps=235 format=3 uid="uid://dnbcq1yipg3xn"]
+[gd_scene load_steps=236 format=3 uid="uid://dnbcq1yipg3xn"]
 
 [ext_resource type="Script" uid="uid://c51w5jv1rqow7" path="res://levels/military_base.gd" id="1_gwqge"]
 [ext_resource type="Texture2D" uid="uid://co2v7m8e8posw" path="res://textures/environment/grass_diff.jpg" id="2_cw3dq"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://hud001" path="res://ui/hud.tscn" id="12_3n27l"]
 [ext_resource type="PackedScene" uid="uid://bpu45ud7d3mtn" path="res://pickups/health_pickup.tscn" id="12_rsncr"]
 [ext_resource type="PackedScene" path="res://ui/scope_overlay.tscn" id="13_1pu4x"]
+[ext_resource type="PackedScene" uid="uid://b8j2p32aesuo2" path="res://ui/emote_wheel.tscn" id="13_emote"]
 [ext_resource type="PackedScene" uid="uid://dpsqny75d2u4" path="res://pickups/ammo_pickup.tscn" id="14_d0n4t"]
 [ext_resource type="PackedScene" uid="uid://enemy001" path="res://enemies/enemy.tscn" id="16_1687o"]
 
@@ -1757,6 +1758,8 @@ text = "Kills: 0"
 horizontal_alignment = 1
 
 [node name="ScopeOverlay" parent="." instance=ExtResource("13_1pu4x")]
+
+[node name="EmoteWheel" parent="." instance=ExtResource("13_emote")]
 
 [node name="Pickups" type="Node3D" parent="."]
 

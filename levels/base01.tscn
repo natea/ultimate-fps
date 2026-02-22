@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://cdujgmqifec18"]
+[gd_scene load_steps=21 format=3 uid="uid://cdujgmqifec18"]
 
 [ext_resource type="Script" uid="uid://cp2cx42hugw6e" path="res://levels/base01.gd" id="1_a40g3"]
 [ext_resource type="PackedScene" uid="uid://cgbxse1j7hre6" path="res://maps/base01/source/nase01full.fbx" id="1_njdf5"]
@@ -8,6 +8,7 @@
 [ext_resource type="Resource" uid="uid://lqhw2m1cv45x" path="res://weapons/pistol.tres" id="5_db6jx"]
 [ext_resource type="PackedScene" uid="uid://hud001" path="res://ui/hud.tscn" id="6_d3b6j"]
 [ext_resource type="PackedScene" path="res://ui/scope_overlay.tscn" id="7_nthcw"]
+[ext_resource type="PackedScene" uid="uid://b8j2p32aesuo2" path="res://ui/emote_wheel.tscn" id="7_emote"]
 [ext_resource type="PackedScene" uid="uid://enemy001" path="res://enemies/enemy.tscn" id="8_y6rcs"]
 [ext_resource type="Script" uid="uid://djosm1w1y1083" path="res://enemies/enemy.gd" id="9_a40g3"]
 [ext_resource type="PackedScene" uid="uid://dpsqny75d2u4" path="res://pickups/ammo_pickup.tscn" id="10_ntn50"]
@@ -112,6 +113,8 @@ horizontal_alignment = 1
 [node name="ScopeOverlay" type="CanvasLayer" parent="." groups=["scope_overlay"] instance=ExtResource("7_nthcw")]
 layer = 10
 script = SubResource("GDScript_rsncr")
+
+[node name="EmoteWheel" parent="." instance=ExtResource("7_emote")]
 
 [node name="Enemies" type="Node3D" parent="."]
 

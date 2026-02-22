@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://tgqdqnuwo6t2"]
+[gd_scene load_steps=22 format=3 uid="uid://tgqdqnuwo6t2"]
 
 [ext_resource type="Script" uid="uid://dwi5tqhp8ssc5" path="res://levels/ancienttown.gd" id="1_0ri8t"]
 [ext_resource type="PackedScene" uid="uid://fplb2x4kyika" path="res://maps/ancienttown/source/ancienttown.fbx" id="1_224vk"]
@@ -8,6 +8,7 @@
 [ext_resource type="Resource" uid="uid://lqhw2m1cv45x" path="res://weapons/pistol.tres" id="5_avfx0"]
 [ext_resource type="PackedScene" uid="uid://hud001" path="res://ui/hud.tscn" id="6_uqyjn"]
 [ext_resource type="PackedScene" path="res://ui/scope_overlay.tscn" id="7_st4tv"]
+[ext_resource type="PackedScene" uid="uid://b8j2p32aesuo2" path="res://ui/emote_wheel.tscn" id="7_emote"]
 [ext_resource type="PackedScene" uid="uid://enemy001" path="res://enemies/enemy.tscn" id="8_5d4bv"]
 [ext_resource type="Script" uid="uid://djosm1w1y1083" path="res://enemies/enemy.gd" id="9_0ri8t"]
 [ext_resource type="PackedScene" uid="uid://dpsqny75d2u4" path="res://pickups/ammo_pickup.tscn" id="10_5qcp0"]
@@ -120,6 +121,8 @@ horizontal_alignment = 1
 [node name="ScopeOverlay" type="CanvasLayer" parent="." groups=["scope_overlay"] instance=ExtResource("7_st4tv")]
 layer = 10
 script = SubResource("GDScript_rsncr")
+
+[node name="EmoteWheel" parent="." instance=ExtResource("7_emote")]
 
 [node name="FloorCollision" type="StaticBody3D" parent="."]
 

@@ -1,9 +1,10 @@
-[gd_scene load_steps=35 format=3 uid="uid://ruins001"]
+[gd_scene load_steps=36 format=3 uid="uid://ruins001"]
 
 [ext_resource type="PackedScene" uid="uid://player001" path="res://player/player.tscn" id="1_player"]
 [ext_resource type="Texture2D" uid="uid://co2v7m8e8posw" path="res://textures/environment/grass_diff.jpg" id="1_r4qgm"]
 [ext_resource type="PackedScene" uid="uid://hud001" path="res://ui/hud.tscn" id="2_hud"]
 [ext_resource type="PackedScene" path="res://ui/scope_overlay.tscn" id="3_scope"]
+[ext_resource type="PackedScene" uid="uid://b8j2p32aesuo2" path="res://ui/emote_wheel.tscn" id="3_emote"]
 [ext_resource type="PackedScene" uid="uid://enemy001" path="res://enemies/enemy.tscn" id="4_enemy"]
 [ext_resource type="PackedScene" path="res://pickups/ammo_pickup.tscn" id="7_inaae"]
 [ext_resource type="Script" uid="uid://djosm1w1y1083" path="res://enemies/enemy.gd" id="8_4885a"]
@@ -137,6 +138,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 30)
 [node name="HUD" parent="." instance=ExtResource("2_hud")]
 
 [node name="ScopeOverlay" parent="." instance=ExtResource("3_scope")]
+
+[node name="EmoteWheel" parent="." instance=ExtResource("3_emote")]
 
 [node name="Temple" type="Node3D" parent="."]
 

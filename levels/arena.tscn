@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://hud001" path="res://ui/hud.tscn" id="2_hud"]
 [ext_resource type="PackedScene" path="res://pickups/ammo_pickup.tscn" id="3_ammo"]
 [ext_resource type="PackedScene" path="res://ui/scope_overlay.tscn" id="4_scope"]
+[ext_resource type="PackedScene" uid="uid://b8j2p32aesuo2" path="res://ui/emote_wheel.tscn" id="4_emote"]
 [ext_resource type="PackedScene" uid="uid://enemy001" path="res://enemies/enemy.tscn" id="5_s8irp"]
 [ext_resource type="Script" uid="uid://djosm1w1y1083" path="res://enemies/enemy.gd" id="6_65vf4"]
 [ext_resource type="Script" path="res://multiplayer/spawn_point.gd" id="8_spawn"]
@@ -71,6 +72,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
 [node name="HUD" parent="." instance=ExtResource("2_hud")]
 
 [node name="ScopeOverlay" parent="." instance=ExtResource("4_scope")]
+
+[node name="EmoteWheel" parent="." instance=ExtResource("4_emote")]
 
 [node name="AmmoPickup1" parent="." instance=ExtResource("3_ammo")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.8, 5)
