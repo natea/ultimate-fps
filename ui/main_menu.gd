@@ -30,6 +30,9 @@ func _ready():
 	var mp_button = Button.new()
 	mp_button.text = "Multiplayer"
 	mp_button.add_theme_font_size_override("font_size", 24)
+	mp_button.add_theme_stylebox_override("normal", $MenuContainer/PlayButton.get_theme_stylebox("normal"))
+	mp_button.add_theme_stylebox_override("hover", $MenuContainer/PlayButton.get_theme_stylebox("hover"))
+	mp_button.add_theme_stylebox_override("pressed", $MenuContainer/PlayButton.get_theme_stylebox("pressed"))
 	mp_button.pressed.connect(_on_multiplayer_pressed)
 	mp_button.mouse_entered.connect(_on_button_hover.bind(mp_button))
 	$MenuContainer.add_child(mp_button)
